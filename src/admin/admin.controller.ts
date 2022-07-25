@@ -3,8 +3,7 @@ import {AdminService} from "./admin.service";
 import {FileInterceptor} from "@nestjs/platform-express";
 import {Response} from 'express';
 import {HrDto} from "../hr/dto/hr.dto";
-import {ChangePasswordInterface} from "../types";
-import {ChangePassword} from "../dto/changePassword.dto";
+import {ChangePassword} from "./dto/changePassword.dto";
 
 @Controller('/admin')
 export class AdminController {

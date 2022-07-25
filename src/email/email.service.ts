@@ -1,5 +1,5 @@
+import {MailerService} from '@nestjs-modules/mailer';
 import {Inject, Injectable} from '@nestjs/common';
-import {MailerService} from "@nest-modules/mailer";
 
 interface SentMessageInfo {
     to: string,
