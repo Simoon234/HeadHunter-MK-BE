@@ -1,9 +1,9 @@
 import {HttpException, HttpStatus, Injectable} from '@nestjs/common';
 import {InjectModel} from "@nestjs/mongoose";
 import {Model} from 'mongoose';
-import {HumanResources} from "../../../../../zadanie HR/HR/hr/src/schemas/hr.schema";
 import {hashPassword} from "../utils/hashPassword";
 import {HrRegisterDto} from "./dto/hr.register.dto";
+import {HumanResources} from "../schemas/hr.schema";
 
 @Injectable()
 export class HrService {
@@ -13,7 +13,7 @@ export class HrService {
     async register(id: string, obj: HrRegisterDto, res: any) {
         try {
             if (obj.password !== obj.passwordRepeat) {
-                throw new HttpException('Password are not the same.', HttpStatus.BAD_REQUEST);
+                return new HttpException('Password are not the same.', HttpStatus.BAD_REQUEST);
             }
 
             const hashPwd = await hashPassword(obj.password);

@@ -1,11 +1,11 @@
 import {Module} from '@nestjs/common';
 import {MongooseModule} from '@nestjs/mongoose';
-import {Admin, AdminSchema} from '../../../../../zadanie HR/HR/hr/src/schemas/admin.schema';
 import {AdminController} from './admin.controller';
 import {AdminService} from './admin.service';
-import {User, UserSchema} from "../../../../../zadanie HR/HR/hr/src/schemas/user.schema";
 import {EmailModule} from "../email/email.module";
-import {HrSchema, HumanResources} from "../../../../../zadanie HR/HR/hr/src/schemas/hr.schema";
+import {Admin, AdminSchema} from "../schemas/admin.schema";
+import {User, UserSchema} from "../schemas/user.schema";
+import {HrSchema, HumanResources} from "../schemas/hr.schema";
 
 @Module({
     imports: [MongooseModule.forFeature([
