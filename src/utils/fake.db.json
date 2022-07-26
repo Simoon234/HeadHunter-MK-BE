@@ -6,10 +6,7 @@
     "courseEngagment": 1,
     "projectDegree": 3,
     "teamProjectDegree": 3,
-    "bonusProjectUrls": [
-      "https://random.org",
-      "https://random.org"
-    ]
+    "bonusProjectUrls": ["https://random.org", "https://random.org"]
   },
   {
     "id": 2,
@@ -18,10 +15,7 @@
     "courseEngagment": 1,
     "projectDegree": 4,
     "teamProjectDegree": 3,
-    "bonusProjectUrls": [
-      "https://random.org",
-      "https://random.org"
-    ]
+    "bonusProjectUrls": ["https://random.org", "https://random.org"]
   },
   {
     "id": 3,
@@ -30,10 +24,7 @@
     "courseEngagment": 1,
     "projectDegree": 5,
     "teamProjectDegree": 3,
-    "bonusProjectUrls": [
-      "https://random.org",
-      "https://random.org"
-    ]
+    "bonusProjectUrls": ["https://random.org", "https://random.org"]
   },
   {
     "id": 4,
@@ -42,10 +33,7 @@
     "courseEngagment": 1,
     "projectDegree": 5,
     "teamProjectDegree": 3,
-    "bonusProjectUrls": [
-      "https://random.org",
-      "https://random.org"
-    ]
+    "bonusProjectUrls": ["https://random.org", "https://random.org"]
   },
   {
     "id": 5,
@@ -54,10 +42,7 @@
     "courseEngagment": 1,
     "projectDegree": 5,
     "teamProjectDegree": 3,
-    "bonusProjectUrls": [
-      "https://random.org",
-      "https://random.org"
-    ]
+    "bonusProjectUrls": ["https://random.org", "https://random.org"]
   },
   {
     "id": 6,
@@ -66,10 +51,7 @@
     "courseEngagment": 3,
     "projectDegree": 5,
     "teamProjectDegree": 3,
-    "bonusProjectUrls": [
-      "https://random.org",
-      "https://random.org"
-    ]
+    "bonusProjectUrls": ["https://random.org", "https://random.org"]
   },
   {
     "id": 7,
@@ -78,10 +60,7 @@
     "courseEngagment": 1,
     "projectDegree": 5,
     "teamProjectDegree": 3,
-    "bonusProjectUrls": [
-      "https://random.org",
-      "https://random.org"
-    ]
+    "bonusProjectUrls": ["https://random.org", "https://random.org"]
   },
   {
     "id": 8,
@@ -90,10 +69,7 @@
     "courseEngagment": 1,
     "projectDegree": 5,
     "teamProjectDegree": 3,
-    "bonusProjectUrls": [
-      "https://random.org",
-      "https://random.org"
-    ]
+    "bonusProjectUrls": ["https://random.org", "https://random.org"]
   },
   {
     "id": 9,
@@ -102,10 +78,7 @@
     "courseEngagment": 1,
     "projectDegree": 5,
     "teamProjectDegree": 3,
-    "bonusProjectUrls": [
-      "https://random.org",
-      "https://random.org"
-    ]
+    "bonusProjectUrls": ["https://random.org", "https://random.org"]
   },
   {
     "id": 10,
@@ -114,9 +87,6 @@
     "courseEngagment": 1,
     "projectDegree": 5,
     "teamProjectDegree": 3,
-    "bonusProjectUrls": [
-      "https://random.org",
-      "https://random.org"
-    ]
+    "bonusProjectUrls": ["https://random.org", "https://random.org"]
   }
 ]

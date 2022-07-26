@@ -1,12 +1,11 @@
-import {IsDefined, IsString} from "class-validator";
+import { IsDefined, IsString } from 'class-validator';
 
 export class HrRegisterDto {
-    @IsString()
-    @IsDefined()
-    password: string;
+  @IsString()
+  @IsDefined()
+  password: string;
 
-    @IsString()
-    @IsDefined()
-    passwordRepeat: string;
-
+  @IsString()
+  @IsDefined()
+  passwordRepeat: string;
 }
