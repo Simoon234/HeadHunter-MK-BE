@@ -1,13 +1,11 @@
-import {Module} from '@nestjs/common';
-import {EmailService} from './email.service';
-import {MailerModule} from '@nestjs-modules/mailer';
-import mailConfig = require("../mailconfig");
-
+import { Module } from '@nestjs/common';
+import { EmailService } from './email.service';
+import { MailerModule } from '@nestjs-modules/mailer';
+import mailConfig = require('../mailconfig');
 
 @Module({
-    imports: [MailerModule.forRoot(mailConfig)],
-    providers: [EmailService],
-    exports: [EmailService]
+  imports: [MailerModule.forRoot(mailConfig)],
+  providers: [EmailService],
+  exports: [EmailService],
 })
-export class EmailModule {
-}
+export class EmailModule {}
