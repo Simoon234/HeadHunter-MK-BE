@@ -20,21 +20,27 @@ export class HrService {
   async register(id: string, obj: HrRegisterDto, res: any) {
     try {
       if (obj.password !== obj.passwordRepeat) {
-        return new HttpException(
-          'Password are not the same.',
-          HttpStatus.BAD_REQUEST,
-        );
+        res.json({
+          message: "Passwords are not the same"
+        });
       }
 
       const hashPwd = await hashPassword(obj.password);
 
       await this.humanResources.updateOne(
         { _id: id },
-        { $set: { password: hashPwd } },
+        { $set: { password: hashPwd, active: true, registerToken: null } }
       );
 
+      const getAdmin = await this.humanResources.findById({ _id: id });
+      if (getAdmin.registerToken === null && getAdmin.active === true) {
+        return res.json({
+          message: "You are already registered"
+        });
+      }
+
       return res.json({
-        message: "Successfully registered.",
+        registeredId: getAdmin._id,
         success: true
       });
     } catch (err) {

@@ -63,3 +63,17 @@ export interface ChangePasswordInterface {
   message: string;
   email: string;
 }
+
+export interface FileInfoInterface {
+  fieldname: string;
+  originalname: string;
+  encoding: string;
+  mimetype: string;
+  buffer: any;
+  size: number;
+}
+
+export interface Payload {
+  email: string;
+  id: string;
+}

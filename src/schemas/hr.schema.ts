@@ -39,10 +39,23 @@ export class HumanResources {
 
     @Prop({
         type: String,
-        default: null,
-        required: true
+        default: null
     })
     password: string;
+
+    @Prop({
+        type: Boolean,
+        default: false
+    })
+    active: boolean;
+
+    @Prop({
+        type: String,
+        default: null,
+        nullable: true
+    })
+
+    registerToken: string;
 
     @Prop([{ type: mongoose.Schema.Types.ObjectId, ref: "User" }])
     users: User[];

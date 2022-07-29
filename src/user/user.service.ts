@@ -1,25 +1,26 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
+import { InjectModel } from "@nestjs/mongoose";
+import { Model } from "mongoose";
 import {
   ReturnedUsersValuesInterfaces,
   Status,
   SuccessfullyUpdatedUsersInterfaces,
-  UserFilterInterface,
-} from '../types';
-import { UserUpdateDto } from './dto/user.update.dto';
-import fetch from 'node-fetch';
-import { Response } from 'express';
-import { User } from '../schemas/user.schema';
+  UserFilterInterface
+} from "../types";
+import { UserUpdateDto } from "./dto/user.update.dto";
+import fetch from "node-fetch";
+import { Response } from "express";
+import { User } from "../schemas/user.schema";
 
 @Injectable()
 export class UserService {
-  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+  constructor(@InjectModel(User.name) private userModel: Model<User>) {
+  }
 
   //PAGINATION
   async getAllActiveUsers(
     itemsOnPage: number,
-    page: number,
+    page: number
   ): Promise<ReturnedUsersValuesInterfaces> {
     const maxItemsOnPage = itemsOnPage;
     const currentPage = page;
@@ -48,15 +49,17 @@ export class UserService {
   async userFoundJob(id: string) {
     const user = this.userModel.findByIdAndUpdate(
       { _id: id },
-      { $set: { status: Status.HIRED } },
+      { $set: { status: Status.HIRED } }
     );
 
     if (!user) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      throw new HttpException("User not found", HttpStatus.NOT_FOUND);
     }
 
+    //wysłać maila adminowi że user taki i taki został zatrudniony
+
     return {
-      updated: true,
+      updated: true
     };
   }
 
