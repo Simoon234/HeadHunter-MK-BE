@@ -1,181 +1,189 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
-import { Apprentice, ContractType, Status, WorkType } from '../types';
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { Document } from "mongoose";
+import { Apprentice, ContractType, Status, WorkType } from "../types";
+
 
 export type UserDocument = User & Document;
 
+
 @Schema()
 export class User {
-  @Prop({
-    type: String,
-    required: true,
-    unique: true,
-  })
-  email: string;
+    @Prop({
+        type: String,
+        required: true,
+        unique: true
+    })
+    email: string;
 
-  @Prop({
-    type: Number,
-    default: 0,
-    min: 0,
-    max: 5,
-  })
-  courseCompletion: number;
+    @Prop({
+        type: Number,
+        default: 0,
+        min: 0,
+        max: 5
+    })
+    courseCompletion: number;
 
-  @Prop({
-    type: Number,
-    required: true,
-    default: 0,
-    min: 0,
-    max: 5,
-  })
-  courseEngagment: number;
+    @Prop({
+        type: Number,
+        required: true,
+        default: 0,
+        min: 0,
+        max: 5
+    })
+    courseEngagment: number;
 
-  @Prop({
-    type: Number,
-    required: true,
-    default: 0,
-    min: 0,
-    max: 5,
-  })
-  projectDegree: number;
+    @Prop({
+        type: Number,
+        required: true,
+        default: 0,
+        min: 0,
+        max: 5
+    })
+    projectDegree: number;
 
-  @Prop({
-    type: Number,
-    required: true,
-    default: 0,
-    min: 0,
-    max: 5,
-  })
-  teamProjectDegree: number;
+    @Prop({
+        type: Number,
+        required: true,
+        default: 0,
+        min: 0,
+        max: 5
+    })
+    teamProjectDegree: number;
 
-  @Prop({
-    type: Array,
-    required: true,
-    default: [],
-  })
-  bonusProjectUrls: string[];
+    @Prop({
+        type: Array,
+        required: true,
+        default: []
+    })
+    bonusProjectUrls: string[];
 
-  @Prop({
-    type: Number,
-    default: null,
-  })
-  tel: number;
+    @Prop({
+        type: Number,
+        default: null
+    })
+    tel: number;
 
-  @Prop({
-    type: String,
-    default: null,
-  })
-  firstName: string;
+    @Prop({
+        type: String,
+        default: null
+    })
+    firstName: string;
 
-  @Prop({
-    type: String,
-    default: null,
-  })
-  lastName: string;
+    @Prop({
+        type: String,
+        default: null
+    })
+    lastName: string;
 
-  @Prop({
-    type: String,
-    default: null,
-  })
-  githubUsername: string;
+    @Prop({
+        type: String,
+        default: null
+    })
+    githubUsername: string;
 
-  @Prop({
-    type: Array,
-    default: [],
-  })
-  portfolioUrls: string[];
+    @Prop({
+        type: Array,
+        default: []
+    })
+    portfolioUrls: string[];
 
-  @Prop({
-    default: [],
-    type: Array,
-  })
-  projectUrls: string[];
+    @Prop({
+        default: [],
+        type: Array
+    })
+    projectUrls: string[];
 
-  @Prop({
-    type: String,
-  })
-  bio: string;
+    @Prop({
+        type: String
+    })
+    bio: string;
 
-  @Prop({
-    type: String,
-    enum: WorkType,
-    default: WorkType.WHATEVER,
-  })
-  expectedTypeWork: WorkType;
+    @Prop({
+        type: String,
+        enum: WorkType,
+        default: WorkType.WHATEVER
+    })
+    expectedTypeWork: WorkType;
 
-  @Prop({
-    type: String,
-    default: null,
-  })
-  targetWorkCity: string;
+    @Prop({
+        type: String,
+        default: null
+    })
+    targetWorkCity: string;
 
-  @Prop({
-    type: String,
-    enum: ContractType,
-    default: ContractType.WHATEVER,
-  })
-  expectedContractType: ContractType;
+    @Prop({
+        type: String,
+        enum: ContractType,
+        default: ContractType.WHATEVER
+    })
+    expectedContractType: ContractType;
 
-  @Prop({
-    type: Number,
-    default: 0,
-  })
-  expectedSalary: number;
+    @Prop({
+        type: Number,
+        default: 0
+    })
+    expectedSalary: number;
 
-  @Prop({
-    type: String,
-    enum: Apprentice,
-    default: Apprentice.NO,
-  })
-  canTakeApprenticeship: Apprentice;
+    @Prop({
+        type: Boolean,
+        enum: Apprentice,
+        default: Apprentice.NO
+    })
+    canTakeApprenticeship: Apprentice;
 
-  @Prop({
-    type: Number,
-    default: null,
-  })
-  monthsOfCommercialExp: number;
+    @Prop({
+        type: Number,
+        default: null
+    })
+    monthsOfCommercialExp: number;
 
-  @Prop({
-    type: String,
-  })
-  education: string;
+    @Prop({
+        type: String
+    })
+    education: string;
 
-  @Prop({
-    type: String,
-  })
-  workExperience: string;
+    @Prop({
+        type: String
+    })
+    workExperience: string;
 
-  @Prop({
-    type: String,
-  })
-  courses: string;
+    @Prop({
+        type: String
+    })
+    courses: string;
 
-  @Prop({
-    type: String,
-    default: null,
-  })
-  token: string;
+    @Prop({
+        type: String,
+        default: null
+    })
+    token: string;
 
-  @Prop({
-    type: Boolean,
-    default: 0,
-  })
-  active: number;
+    @Prop({
+        type: Boolean,
+        default: 0
+    })
+    active: number;
 
-  @Prop({
-    type: String,
-    default: Status.ACTIVE,
-    enum: Status,
-  })
-  status: Status;
+    @Prop({
+        type: String,
+        default: Status.ACTIVE,
+        enum: Status
+    })
+    status: Status;
 
-  @Prop({
-    type: String,
-    default:
-      'https://www.deviantart.com/karmaanddestiny/art/Default-user-icon-4-858661084',
-  })
-  avatarUrl: string;
+    @Prop({
+        type: String,
+        default: "https://www.deviantart.com/karmaanddestiny/art/Default-user-icon-4-858661084"
+    })
+    avatarUrl: string;
+
+    @Prop({
+        default: null,
+        type: String
+    })
+    addedByHr: string;
 }
+
 
 //api for user if exist.
 // https://api.github.com/users/{username}
