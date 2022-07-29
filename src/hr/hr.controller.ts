@@ -1,16 +1,27 @@
-import { Body, Controller, Inject, Param, Post, Res } from '@nestjs/common';
-import { HrService } from './hr.service';
-import { HrRegisterDto } from './dto/hr.register.dto';
+import { Body, Controller, Get, Inject, Param, Post, Res } from "@nestjs/common";
+import { HrService } from "./hr.service";
+import { HrRegisterDto } from "./dto/hr.register.dto";
 
-@Controller('/hr')
+@Controller("/hr")
 export class HrController {
-  constructor(@Inject(HrService) private hr: HrService) {}
+  constructor(@Inject(HrService) private hr: HrService) {
+  }
 
-  @Post('/register/:id')
+  @Get("/interested")
+  getAllInterestedUsers() {
+    return this.hr.usersAddedToTalkByCurrentHr();
+  }
+
+  @Get("/addToTalk/:id")
+  addToTalk(@Param("id") id: string) {
+    return this.hr.addToTalk(id);
+  }
+
+  @Post("/register/:id")
   registerHr(
-    @Param('id') id: string,
+    @Param("id") id: string,
     @Body() obj: HrRegisterDto,
-    @Res() res: any,
+    @Res() res: any
   ) {
     return this.hr.register(id, obj, res);
   }
