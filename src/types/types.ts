@@ -1,4 +1,4 @@
-import { User } from '../schemas/user.schema';
+import { User } from "../schemas/user.schema";
 
 export enum WorkType {
   STAY = 'Na miejscu',
@@ -17,8 +17,8 @@ export enum ContractType {
 }
 
 export enum Apprentice {
-  YES = 'Tak',
-  NO = 'Nie',
+  YES = "true",
+  NO = "false",
 }
 
 export enum Status {
