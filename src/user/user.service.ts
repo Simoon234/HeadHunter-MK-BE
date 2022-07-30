@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
+import { HttpException, HttpStatus, Inject, Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import {
@@ -11,10 +11,14 @@ import { UserUpdateDto } from "./dto/user.update.dto";
 import fetch from "node-fetch";
 import { Response } from "express";
 import { User } from "../schemas/user.schema";
+import { EmailService } from "../email/email.service";
 
 @Injectable()
 export class UserService {
-  constructor(@InjectModel(User.name) private userModel: Model<User>) {
+  constructor(
+    @InjectModel(User.name) private userModel: Model<User>,
+    @Inject(EmailService) private emailService: EmailService
+  ) {
   }
 
   //PAGINATION
@@ -41,26 +45,41 @@ export class UserService {
 
     return {
       users: getAllActiveUsers,
-      pages: totalPages,
+      pages: totalPages
     };
   }
 
   //TYLKO USER ROLA USER useGuard()
-  async userFoundJob(id: string) {
-    const user = this.userModel.findByIdAndUpdate(
-      { _id: id },
-      { $set: { status: Status.HIRED } }
-    );
+  async userFoundJob(id: string, res: Response) {
+    try {
+      const user = await this.userModel.findOneAndUpdate(
+        { _id: id },
+        { $set: { status: Status.HIRED, active: false } }
+      );
 
-    if (!user) {
-      throw new HttpException("User not found", HttpStatus.NOT_FOUND);
+      if (!user) {
+        throw new HttpException("User not found", HttpStatus.NOT_FOUND);
+      }
+
+      await this.emailService.sendEmail(
+        "admin1@wp.pl",
+        "YEAAHH 🔥🔥🔥",
+        `User with ${id} got job!`
+      );
+
+      res.json({
+        updated: true,
+        message: `User with ${id} got job.`
+      });
+    } catch (e) {
+      if (e) {
+        res.status(404);
+        res.json({
+          message: "User not found. Make sure you use valid id.",
+          status: false
+        });
+      }
     }
-
-    //wysłać maila adminowi że user taki i taki został zatrudniony
-
-    return {
-      updated: true
-    };
   }
 
   //Update
