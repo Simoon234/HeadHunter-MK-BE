@@ -17,8 +17,8 @@ export class UserController {
     return this.userService.getAllActiveUsers(itemsOnPage, page);
   }
 
-  @Get('/details/:id')
-  getSingleUserCV(@Param('id') id: string, @Res() res: any) {
+  @Get("/details/:id")
+  getSingleUserCV(@Param("id") id: string, @Res() res: any) {
     return this.userService.getSingleUserCV(id, res);
   }
 
@@ -27,13 +27,18 @@ export class UserController {
     return this.userService.userFoundJob(id, res);
   }
 
-  @Patch('/update/:id')
-  updateUser(@Param('id') id: string, @Body() user: UserUpdateDto) {
+  @Patch("/update/:id")
+  updateUser(@Param("id") id: string, @Body() user: UserUpdateDto) {
     return this.userService.updateUserAfterLogin(id, user);
   }
 
-  @Get('/filter')
+  @Get("/filter")
   filterData(@Query() query: UserFilterInterface) {
     return this.userService.filterUsers(query);
+  }
+
+  @Get("/delete-account/:id")
+  deleteAccount(@Param("id") id: string, @Res() res: Response) {
+    return this.userService.deleteAccount(id, res);
   }
 }

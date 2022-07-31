@@ -114,35 +114,41 @@ export class UserService {
       if (user.email === email) {
         throw new HttpException(
           `User already exists with that email. (${email})`,
-          HttpStatus.BAD_REQUEST,
+          HttpStatus.BAD_REQUEST
         );
       }
     }
 
-    //check GITHUB USERNAME
-    const res = await fetch(`https://api.github.com/users/${githubUsername}`);
-    if (res.status === 404) {
-      throw new HttpException(
-        `Github username not exist. Check again username: (${githubUsername})`,
-        HttpStatus.NOT_FOUND,
-      );
+    if (githubUsername === "") {
+      avatarUrl =
+        "https://www.deviantart.com/karmaanddestiny/art/Default-user-icon-4-858661084";
+    } else {
+      //check GITHUB USERNAME
+      const res = await fetch(`https://api.github.com/users/${githubUsername}`);
+      if (res.status === 404) {
+        throw new HttpException(
+          `Github username not exist. Check again username: (${githubUsername})`,
+          HttpStatus.NOT_FOUND
+        );
+      }
+      if (res.status === 200) {
+        avatarUrl = `https://github.com/${githubUsername}.png`;
+      }
     }
-    if (res.status === 200) {
-      avatarUrl = `https://github.com/${githubUsername}.png`;
-    }
+
     //check values
     if (
-      email === '' ||
+      email === "" ||
       tel === 0 ||
       portfolioUrls.length === 0 ||
-      targetWorkCity === '' ||
-      expectedSalary === ''
+      targetWorkCity === "" ||
+      expectedSalary === ""
     ) {
       email = findUser.email;
       tel = 0;
       portfolioUrls = [];
-      targetWorkCity = '';
-      expectedSalary = 0;
+      targetWorkCity = "";
+      expectedSalary = "";
     }
 
     if (monthsOfCommercialExp < 0) {
@@ -167,7 +173,7 @@ export class UserService {
     }
 
     //UPDATE USER
-    await this.userModel.findByIdAndUpdate(
+    await this.userModel.findOneAndUpdate(
       { _id: id },
       {
         $set: {
@@ -194,8 +200,8 @@ export class UserService {
     );
 
     return {
-      success: true,
       text: `User with id (${id}) updated`,
+      success: true
     };
   }
 
@@ -204,7 +210,7 @@ export class UserService {
     try {
       const user = await this.userModel.findOne({ _id: id });
       res.json({
-        user,
+        user: user === null ? "User not found" : user
       });
     } catch (e) {
       if (e) {
@@ -228,5 +234,30 @@ export class UserService {
       }
       return isValid;
     });
+  }
+
+  async deleteAccount(id: string, res: Response) {
+    try {
+      const user = await this.userModel.deleteOne({ _id: id });
+
+      if (user.deletedCount <= 0) {
+        return res.status(404).json({
+          message: "User with that ID was deleted"
+        });
+      }
+
+      res.status(204).json({
+        message: `User with id ${id} has been deleted`,
+        success: true
+      });
+    } catch (e) {
+      if (e) {
+        res.status(400);
+        res.json({
+          message: "Invalid id",
+          status: false
+        });
+      }
+    }
   }
 }

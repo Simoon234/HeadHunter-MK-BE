@@ -1,11 +1,11 @@
-import { IsArray, IsBoolean, IsEnum, IsInt, IsString } from 'class-validator';
-import { ContractType, WorkType } from '../../types';
+import { IsArray, IsBoolean, IsEnum, IsNumber, IsString } from "class-validator";
+import { ContractType, WorkType } from "../../types";
 
 export class UserUpdateDto {
   @IsString()
   email: string;
 
-  @IsInt()
+  @IsNumber()
   tel: number;
 
   @IsString()
@@ -41,7 +41,7 @@ export class UserUpdateDto {
   @IsBoolean()
   canTakeApprenticeship: boolean;
 
-  @IsInt()
+  @IsNumber()
   monthsOfCommercialExp: number;
 
   @IsString()
