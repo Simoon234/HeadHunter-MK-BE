@@ -65,17 +65,19 @@ export class AdminService {
 
       const users = await this.userModel.insertMany(parsedObject);
 
+      users.map(async (user) => {
+        const { token } = await this.createTokenAndSendEmail(
+          { email: user.email, id: user._id.toString() },
+          process.env.REGISTER_TOKEN_USER
+        );
+        user.registerToken = token;
+        await user.save();
+      });
+
       res.json({
         users: users.map((item) => AdminService.filterMethod(item)),
         status: "Success"
       });
-
-      for (const user of users) {
-        await this.createTokenAndSendEmail(
-          user.email,
-          process.env.REGISTER_TOKEN_USER
-        );
-      }
     } catch ({ code, message, result }) {
       if (code === 11000) {
         res.json({
@@ -195,12 +197,9 @@ export class AdminService {
     }
   }
 
-  private async createTokenAndSendEmail(
-    payload: Payload,
-    secret: string
-  ) {
+  private async createTokenAndSendEmail(payload: Payload, secret: string) {
     const token = sign({ email: payload.email, id: payload.id }, secret, {
-      expiresIn: "10s"
+      expiresIn: "24h"
     });
     const checkTokenValid = verify(token, secret);
     if (checkTokenValid) {
