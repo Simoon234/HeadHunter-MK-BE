@@ -1,12 +1,7 @@
 import { HttpException, HttpStatus, Inject, Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
-import {
-  ReturnedUsersValuesInterfaces,
-  Status,
-  SuccessfullyUpdatedUsersInterfaces,
-  UserFilterInterface
-} from "../types";
+import { Status, SuccessfullyUpdatedUsersInterfaces, UserFilterInterface } from "../types";
 import { UserUpdateDto } from "./dto/user.update.dto";
 import fetch from "node-fetch";
 import { Response } from "express";
@@ -22,20 +17,17 @@ export class UserService {
   }
 
   //PAGINATION
-  async getAllActiveUsers(
-    itemsOnPage: number,
-    page: number
-  ): Promise<ReturnedUsersValuesInterfaces> {
+  async getAllActiveUsers(itemsOnPage: number, page: number) {
     const maxItemsOnPage = itemsOnPage;
     const currentPage = page;
     const countElement = await this.userModel.count({
       status: Status.ACTIVE,
-      active: true,
+      active: true
     });
     const getAllActiveUsers = await this.userModel
       .find({
         status: Status.ACTIVE,
-        active: true,
+        active: true
       })
       .skip(maxItemsOnPage * (currentPage - 1))
       .limit(maxItemsOnPage)
@@ -44,7 +36,21 @@ export class UserService {
     const totalPages = Math.round(countElement / maxItemsOnPage);
 
     return {
-      users: getAllActiveUsers,
+      users: getAllActiveUsers.map((item) => {
+        return {
+          id: item._id,
+          courseCompletion: item.courseCompletion,
+          courseEngagment: item.courseEngagment,
+          projectDegree: item.projectDegree,
+          teamProjectDegree: item.teamProjectDegree,
+          expectedTypeWork: item.expectedTypeWork,
+          expectedContractType: item.expectedContractType,
+          expectedSalary: item.expectedSalary,
+          canTakeApprenticeship: item.canTakeApprenticeship,
+          monthsOfCommercialExp: item.monthsOfCommercialExp,
+          targetWorkCity: item.targetWorkCity
+        };
+      }),
       pages: totalPages
     };
   }
@@ -137,28 +143,28 @@ export class UserService {
     }
 
     //check values
-    if (
-      email === "" ||
-      tel === 0 ||
-      portfolioUrls.length === 0 ||
-      targetWorkCity === "" ||
-      expectedSalary === ""
-    ) {
+    if (email === "" || portfolioUrls.length === 0 || targetWorkCity === "") {
       email = findUser.email;
-      tel = 0;
       portfolioUrls = [];
       targetWorkCity = "";
-      expectedSalary = "";
+    }
+
+    if (tel === 0 || tel === null) {
+      tel = 0;
+    }
+
+    if (expectedSalary === null || expectedSalary === "") {
+      expectedSalary = 0;
     }
 
     if (monthsOfCommercialExp < 0) {
       throw new HttpException(
-        'Not allowed to set negative values',
-        HttpStatus.BAD_REQUEST,
+        "Not allowed to set negative values",
+        HttpStatus.BAD_REQUEST
       );
     }
 
-    if (!email.includes('@') || email.length <= 5) {
+    if (!email.includes("@") || email.length <= 5) {
       throw new HttpException(
         `Email should contain @. Got (${email}), and have at least 5 characters.`,
         HttpStatus.BAD_REQUEST,
