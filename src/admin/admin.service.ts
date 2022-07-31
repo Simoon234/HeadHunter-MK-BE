@@ -4,9 +4,8 @@ import { Model } from "mongoose";
 import { Response } from "express";
 import { EmailService } from "../email/email.service";
 import { sign, verify } from "jsonwebtoken";
-import { compare } from "bcrypt";
 import { HrDto } from "../hr/dto/hr.dto";
-import { hashPassword } from "../utils/hashPassword";
+import { hashPassword, verifyPassword } from "../utils/hashPassword";
 import { ChangePasswordInterface, FileInfoInterface, Payload } from "../types";
 import { HumanResources } from "../schemas/hr.schema";
 import { User, UserDocument } from "../schemas/user.schema";
@@ -90,10 +89,6 @@ export class AdminService {
     }
   }
 
-  private static verifyPassword(password: string, storedPassword: string) {
-    return compare(password, storedPassword);
-  }
-
   async changePassword(
     email: string,
     obj: ChangePassword
@@ -130,7 +125,6 @@ export class AdminService {
         lastName: obj.lastname,
         email: obj.email,
         company: obj.company,
-        maxReservedStudents: obj.maxReservedStudents
       });
       const data = await newHr.save();
 
@@ -179,9 +173,9 @@ export class AdminService {
       throw new Error('Admin not found');
     }
 
-    const checkPassword = await AdminService.verifyPassword(
+    const checkPassword = await verifyPassword(
       password,
-      admin.password,
+      admin.password
     );
 
     if (checkPassword === false) {
@@ -189,7 +183,7 @@ export class AdminService {
     }
 
     if (admin && checkPassword) {
-      admin.token = sign({ email: admin.email }, "12j3hg12u3123ug1y26312ui3");
+      admin.token = sign({ email: admin.email }, process.env.ADMIN_TOKEN_LOGIN);
       return {
         id: admin._id,
         email: admin.email

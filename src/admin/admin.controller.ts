@@ -15,6 +15,8 @@ import { FileInterceptor } from "@nestjs/platform-express";
 import { Response } from "express";
 import { HrDto } from "../hr/dto/hr.dto";
 import { ChangePassword } from "./dto/changePassword.dto";
+import { Roles } from "../decorators/roles.decorator";
+import { Role } from "../types";
 
 @Controller("/admin")
 export class AdminController {
@@ -27,12 +29,14 @@ export class AdminController {
     return this.adminService.changePassword(email, obj);
   }
 
+  @Roles(Role.ADMIN)
   @HttpCode(201)
   @Post('/add/hr')
   addHr(@Body() obj: HrDto, @Res() res: Response) {
     return this.adminService.addHumanResource(obj, res);
   }
 
+  @Roles(Role.ADMIN)
   @HttpCode(201)
   @Post('/upload')
   @UseInterceptors(FileInterceptor('file'))
