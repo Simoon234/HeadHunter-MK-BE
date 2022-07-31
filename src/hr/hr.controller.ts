@@ -1,6 +1,5 @@
-import { Body, Controller, Get, Inject, Param, Post, Res } from "@nestjs/common";
+import { Controller, Get, Inject, Param } from "@nestjs/common";
 import { HrService } from "./hr.service";
-import { HrRegisterDto } from "./dto/hr.register.dto";
 
 @Controller("/hr")
 export class HrController {
@@ -20,14 +19,5 @@ export class HrController {
   @Get("/addToTalk/:id")
   addToTalk(@Param("id") id: string) {
     return this.hr.addToTalk(id);
-  }
-
-  @Post("/register/:id")
-  registerHr(
-    @Param("id") id: string,
-    @Body() obj: HrRegisterDto,
-    @Res() res: any
-  ) {
-    return this.hr.register(id, obj, res);
   }
 }

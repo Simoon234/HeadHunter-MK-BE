@@ -1,8 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
-import { hashPassword } from "../utils/hashPassword";
-import { HrRegisterDto } from "./dto/hr.register.dto";
 import { HumanResources } from "../schemas/hr.schema";
 import { sign, TokenExpiredError, verify } from "jsonwebtoken";
 import { User } from "../schemas/user.schema";
@@ -18,39 +16,6 @@ export class HrService {
   ) {
   }
 
-  async register(id: string, obj: HrRegisterDto, res: any) {
-    try {
-      if (obj.password !== obj.passwordRepeat) {
-        res.json({
-          message: "Passwords are not the same"
-        });
-      }
-
-      const hashPwd = await hashPassword(obj.password);
-
-      await this.humanResources.updateOne(
-        { _id: id },
-        { $set: { password: hashPwd, active: true, registerToken: null } }
-      );
-
-      const getAdmin = await this.humanResources.findById({ _id: id });
-      if (getAdmin.registerToken === null && getAdmin.active === true) {
-        return res.json({
-          message: "You are already registered"
-        });
-      }
-
-      return res.json({
-        registeredId: getAdmin._id,
-        success: true
-      });
-    } catch (err) {
-      res.json({
-        message: err.message
-      });
-      console.error(err);
-    }
-  }
 
   async addToTalk(id: string) {
     const addUserToTalk = await this.user.findOne({ _id: id });
