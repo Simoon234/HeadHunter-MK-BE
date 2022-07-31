@@ -12,6 +12,11 @@ export class HrController {
     return this.hr.usersAddedToTalkByCurrentHr();
   }
 
+  @Get("/not-interested/:id")
+  notInterested(@Param("id") id: string) {
+    return this.hr.notInterested(id);
+  }
+
   @Get("/addToTalk/:id")
   addToTalk(@Param("id") id: string) {
     return this.hr.addToTalk(id);
