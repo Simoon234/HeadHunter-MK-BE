@@ -34,7 +34,6 @@ export interface HrInterfaces {
   lastname: string;
   email: string;
   company: string;
-  maxReservedStudents: number;
 }
 
 export interface ReturnedUsersValuesInterfaces {
@@ -76,4 +75,11 @@ export interface FileInfoInterface {
 export interface Payload {
   email: string;
   id: string;
+}
+
+
+export enum Role {
+  ADMIN = "ADMIN",
+  USER = "USER",
+  HR = "HR",
 }

@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document } from "mongoose";
-import { Apprentice, ContractType, Status, WorkType } from "../types";
+import { Apprentice, ContractType, Role, Status, WorkType } from "../types";
 
 export type UserDocument = User & Document;
 
@@ -12,6 +12,11 @@ export class User {
     unique: true
   })
   email: string;
+
+  @Prop({
+    type: String
+  })
+  password: string;
 
   @Prop({
     type: Number,
@@ -151,12 +156,6 @@ export class User {
   courses: string;
 
   @Prop({
-    type: String,
-    default: null
-  })
-  token: string;
-
-  @Prop({
     type: Boolean,
     default: 0
   })
@@ -181,6 +180,27 @@ export class User {
     default: null
   })
   registerToken: string;
+
+  @Prop({
+    type: String,
+    default: null,
+    nullable: true
+  })
+  accessToken: string;
+
+  @Prop({
+    type: String,
+    default: null,
+    nullable: true
+  })
+  refreshToken: string;
+
+  @Prop({
+    type: String,
+    default: Role.USER,
+    enum: Role
+  })
+  role: Role.USER;
 
   @Prop({
     default: null,
