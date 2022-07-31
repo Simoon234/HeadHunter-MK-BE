@@ -167,7 +167,7 @@ export class UserService {
     if (!email.includes("@") || email.length <= 5) {
       throw new HttpException(
         `Email should contain @. Got (${email}), and have at least 5 characters.`,
-        HttpStatus.BAD_REQUEST,
+        HttpStatus.BAD_REQUEST
       );
     }
 
