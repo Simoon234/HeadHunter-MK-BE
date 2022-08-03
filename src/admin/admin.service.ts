@@ -5,7 +5,7 @@ import { Response } from "express";
 import { EmailService } from "../email/email.service";
 import { sign, verify } from "jsonwebtoken";
 import { HrDto } from "../hr/dto/hr.dto";
-import { hashPassword, verifyPassword } from "../utils/hashPassword";
+import { hashPassword } from "../utils/hashPassword";
 import { ChangePasswordInterface, FileInfoInterface, Payload } from "../types";
 import { HumanResources } from "../schemas/hr.schema";
 import { User, UserDocument } from "../schemas/user.schema";
@@ -42,9 +42,35 @@ export class AdminService {
     };
   }
 
+  async createTokenAndSendEmail(payload: Payload, secret: string) {
+    const token = sign({ email: payload.email, id: payload.id }, secret, {
+      expiresIn: "24h"
+    });
+
+    const checkTokenValid = verify(token, secret);
+    if (checkTokenValid) {
+      await this.emailService.sendEmail(
+        payload.email,
+        "Register",
+        `Click link to register. + ${payload.id} + ${token}`
+      );
+    } else {
+      throw new Error("Token is not valid anymore");
+    }
+
+    return {
+      payload,
+      secret,
+      token
+    };
+  }
+
   async upload(file: FileInfoInterface, res: Response) {
     const convertFile = file.buffer.toString();
     const parsedObject = JSON.parse(convertFile);
+    const duplicates = [];
+    const newArray = [];
+
 
     try {
       if (file.mimetype !== "application/json") {
@@ -54,9 +80,12 @@ export class AdminService {
       }
 
       parsedObject.map(async (obj) => {
+        let err = [];
         if (!obj.email.includes("@")) {
+          err.push(obj);
           res.json({
-            message: `Sorry, we only accept valid email addresses. (${obj.email}) (missing '@')`
+            message: `Sorry, we only accept valid email addresses.(missing '@')`,
+            err
           });
           throw new Error(`[${obj.email}] does not have @`);
         }
@@ -163,53 +192,4 @@ export class AdminService {
     };
   }
 
-  // log admin -> zmienić DAĆ DO AUTH
-  async login(email: string, password: string) {
-    const admin = await this.adminModel.findOne({
-      email,
-    });
-
-    if (!admin) {
-      throw new Error('Admin not found');
-    }
-
-    const checkPassword = await verifyPassword(
-      password,
-      admin.password
-    );
-
-    if (checkPassword === false) {
-      throw new Error('Password is incorrect');
-    }
-
-    if (admin && checkPassword) {
-      admin.token = sign({ email: admin.email }, process.env.ADMIN_TOKEN_LOGIN);
-      return {
-        id: admin._id,
-        email: admin.email
-      };
-    }
-  }
-
-  private async createTokenAndSendEmail(payload: Payload, secret: string) {
-    const token = sign({ email: payload.email, id: payload.id }, secret, {
-      expiresIn: "24h"
-    });
-    const checkTokenValid = verify(token, secret);
-    if (checkTokenValid) {
-      await this.emailService.sendEmail(
-        payload.email,
-        "Register",
-        `Click link to register. + ${payload.id} + ${token}`
-      );
-    } else {
-      throw new Error("Token is not valid anymore");
-    }
-
-    return {
-      payload,
-      secret,
-      token
-    };
-  }
 }

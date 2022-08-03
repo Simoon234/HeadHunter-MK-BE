@@ -10,22 +10,29 @@ import { RegisterDto } from "./dto/register.dto";
 import { hashPassword, verifyPassword } from "../utils/hashPassword";
 import { HumanResources } from "src/schemas/hr.schema";
 import { EmailService } from "../email/email.service";
+import { Role } from "../types";
+import { Admin } from "../schemas/admin.schema";
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectModel(User.name) private user: Model<User>,
     @InjectModel(HumanResources.name) private hr: Model<HumanResources>,
-    @Inject(EmailService) private mailService: EmailService
+    @Inject(EmailService) private mailService: EmailService,
+    @InjectModel(Admin.name) private admin: Model<Admin>
   ) {
   }
 
-  private static createToken(currentTokenId: string): {
+  private static createToken(
+    currentTokenId: string,
+    email: string
+  ): {
     accessToken: string;
     expiresIn: number;
   } {
-    const payload: { id: string } = {
-      id: currentTokenId
+    const payload: { id: string, email: string } = {
+      id: currentTokenId,
+      email
     };
     const expiresIn = 60 * 60 * 24;
     const accessToken = sign(payload, process.env.LOG_TOKEN, {
@@ -41,42 +48,56 @@ export class AuthService {
   async login(req: LogDto, res: Response) {
     const { email, password } = req;
 
+    const users = await this.user.find({ email }).exec();
+    const hr = await this.hr.find({ email }).exec();
+    const admins = await this.admin.find({ email }).exec();
+
+    const all = [...users, ...hr, ...admins];
+
+    if (all.length === 0) {
+      throw new HttpException(
+        "User not found. Please try again.",
+        HttpStatus.NOT_FOUND
+      );
+    }
+
     try {
-      const user = await this.user.findOne({
-        email
+      all.map(async (item) => {
+        if (item.accessToken) {
+          return res.json({
+            message: "You are already logged in."
+          });
+        }
+        const pwd = await verifyPassword(password, item.password);
+
+        if (pwd === false) {
+          return res.json({ error: "Invalid login" });
+        }
+
+        const token = AuthService.createToken(
+          await this.generateToken(item),
+          item.email
+        );
+
+        return res
+          .cookie("jwt", token.accessToken, {
+            secure: false,
+            domain: "localhost",
+            httpOnly: true
+          })
+          .json({
+            id: item._id,
+            email: item.email,
+            firstName: item.role !== Role.HR ? item.role !== Role.ADMIN ? item?.firstName : "" : "",
+            lastName: item.role !== Role.ADMIN ? item?.lastName : "",
+            role: item.role
+          });
       });
-
-      if (user.accessToken) {
-        res.json({
-          message: "You are already logged in."
-        });
-      }
-
-      const pwd = await verifyPassword(password, user.password);
-
-      if (!user && pwd === false) {
-        return res.json({ error: "Invalid login" });
-      }
-
-      const token = AuthService.createToken(await this.generateToken(user));
-
-      return res
-        .cookie("jwt", token.accessToken, {
-          secure: false,
-          domain: "localhost",
-          httpOnly: true
-        })
-        .json({
-          message: "Successfully logged in!"
-        });
     } catch (e) {
       console.log(e);
       return res.json({ error: e.message });
     }
   }
-
-  //LOGOWANIE TYLKO UZYTKOWNIKOW!
-
   async registerHr(
     id: string,
     registerToken: string,
@@ -157,6 +178,7 @@ export class AuthService {
   }
 
   async logout(person, res: Response) {
+    console.log({ person });
     try {
       person.accessToken = null;
       await person.save();
@@ -210,20 +232,19 @@ export class AuthService {
     };
   }
 
-  private async generateToken(user): Promise<string> {
+  private async generateToken(obj): Promise<string> {
     let token: string;
     let refreshToken: string;
-    let userWithTheSameToken = null;
+    const personWithTheSameToken = null;
 
     do {
       token = uuid();
       refreshToken = uuid();
-      userWithTheSameToken = await this.user.findOne({ accessToken: token });
-    } while (!!userWithTheSameToken);
+    } while (!!personWithTheSameToken);
 
-    user.accessToken = token;
-    user.refreshToken = refreshToken;
-    await user.save();
+    obj.accessToken = token;
+    obj.refreshToken = refreshToken;
+    await obj.save();
     return token;
   }
 }

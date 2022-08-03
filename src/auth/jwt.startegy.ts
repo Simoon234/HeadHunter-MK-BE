@@ -4,6 +4,8 @@ import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { User } from "../schemas/user.schema";
 import { Model } from "mongoose";
 import { InjectModel } from "@nestjs/mongoose";
+import { HumanResources } from "../schemas/hr.schema";
+import { Admin } from "src/schemas/admin.schema";
 
 function cookieExtract(req: any): null | string {
   return req && req.cookies ? req.cookies?.jwt ?? null : null;
@@ -11,7 +13,11 @@ function cookieExtract(req: any): null | string {
 
 @Injectable()
 export class JwtStr extends PassportStrategy(Strategy) {
-  constructor(@InjectModel(User.name) private user: Model<User>) {
+  constructor(
+    @InjectModel(User.name) private user: Model<User>,
+    @InjectModel(HumanResources.name) private hr: Model<HumanResources>,
+    @InjectModel(Admin.name) private admin: Model<Admin>
+  ) {
     super({
       jwtFromRequest: cookieExtract,
       secretOrKey: process.env.LOG_TOKEN
@@ -19,13 +25,17 @@ export class JwtStr extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any, done: (err, user) => void) {
+    const candidates = await this.user.find({ email: payload.email }).exec();
+    const hr = await this.hr.find({ email: payload.email }).exec();
+    const admins = await this.admin.find({ email: payload.email }).exec();
+
+    const all = [...candidates, ...hr, ...admins];
+
     if (!payload && !payload.id) {
       return done(new UnauthorizedException(), false);
     }
 
-    const user = await this.user.findOne({
-      where: { accessToken: payload.id }
-    });
+    const user = all.find((item) => item.accessToken === payload.id);
 
     if (!user) {
       return done(new UnauthorizedException(), false);

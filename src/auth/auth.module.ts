@@ -6,12 +6,14 @@ import { User, UserSchema } from "src/schemas/user.schema";
 import { HrSchema, HumanResources } from "../schemas/hr.schema";
 import { JwtStr } from "./jwt.startegy";
 import { EmailModule } from "../email/email.module";
+import { Admin, AdminSchema } from "../schemas/admin.schema";
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
-      { name: HumanResources.name, schema: HrSchema }
+      { name: HumanResources.name, schema: HrSchema },
+      { name: Admin.name, schema: AdminSchema }
     ]),
     EmailModule
   ],

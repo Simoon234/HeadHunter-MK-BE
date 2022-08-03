@@ -51,9 +51,4 @@ export class AdminController {
     return this.adminService.register(email, password);
   }
 
-  @HttpCode(201)
-  @Post('/login')
-  logAdmin(@Body('email') email: string, @Body('password') password: string) {
-    return this.adminService.login(email, password);
-  }
 }
