@@ -61,4 +61,7 @@ export class UserUpdateDto {
 
   @IsString()
   courses: string;
+
+  @IsString()
+  avatarUrl: string;
 }

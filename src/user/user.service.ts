@@ -112,6 +112,7 @@ export class UserService {
       canTakeApprenticeship,
       projectUrls,
       portfolioUrls,
+      scrumUrls,
       avatarUrl,
     }: UserUpdateDto,
   ): Promise<SuccessfullyUpdatedUsersInterfaces> {
@@ -203,6 +204,7 @@ export class UserService {
           workExperience,
           portfolioUrls,
           projectUrls,
+          scrumUrls,
           avatarUrl,
         },
       },
