@@ -17,8 +17,8 @@ export class Admin implements AdminInterface {
   @Prop({ type: String, required: true })
   password: string;
 
-  @Prop({ type: String })
-  token: string;
+  @Prop({ type: String, default: null, nullable: true })
+  accessToken: string;
 
   @Prop({
     type: String,
