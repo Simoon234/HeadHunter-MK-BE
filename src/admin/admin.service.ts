@@ -6,7 +6,12 @@ import { EmailService } from '../email/email.service';
 import { sign, verify } from 'jsonwebtoken';
 import { HrDto } from '../hr/dto/hr.dto';
 import { hashPassword, verifyPassword } from '../utils/hashPassword';
-import { ChangePasswordInterface, FileInfoInterface, Payload } from '../types';
+import {
+  ChangePasswordInterface,
+  FileInfoInterface,
+  Payload,
+  Role,
+} from '../types';
 import { HumanResources } from '../schemas/hr.schema';
 import { User, UserDocument } from '../schemas/user.schema';
 import { Admin, AdminDocument } from '../schemas/admin.schema';
@@ -155,6 +160,7 @@ export class AdminService {
     const admin = new this.adminModel({
       email,
       password: hashPwd,
+      role: Role.ADMIN,
     });
     const result = await admin.save();
     return {
@@ -195,6 +201,7 @@ export class AdminService {
       return {
         id: admin._id,
         email: admin.email,
+        role: admin.role,
       };
     }
   }
