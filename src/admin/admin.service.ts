@@ -94,7 +94,7 @@ export class AdminService {
           await user.save();
         });
 
-        return res.json({
+        res.json({
           users: file.map((item) => AdminService.filterMethod(item)),
           status: "Success"
         });

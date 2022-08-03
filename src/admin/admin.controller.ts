@@ -25,7 +25,6 @@ export class AdminController {
     return this.adminService.addHumanResource(obj, res);
   }
 
-  @Roles(Role.ADMIN)
   @HttpCode(201)
   @Post("/upload")
   uploadUsers(@Body() file: AddUsersDto[], @Res() res: Response) {
