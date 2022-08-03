@@ -196,10 +196,10 @@ export class User {
 
   @Prop({
     type: String,
-    default: Role.USER,
+    default: Role.STUDENT,
     enum: Role
   })
-  role: Role.USER;
+  role: Role.STUDENT;
 
   @Prop({
     default: null,

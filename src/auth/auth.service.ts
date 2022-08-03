@@ -30,7 +30,7 @@ export class AuthService {
     accessToken: string;
     expiresIn: number;
   } {
-    const payload: { id: string, email: string } = {
+    const payload: { id: string; email: string } = {
       id: currentTokenId,
       email
     };
@@ -88,8 +88,13 @@ export class AuthService {
           .json({
             id: item._id,
             email: item.email,
-            firstName: item.role !== Role.HR ? item.role !== Role.ADMIN ? item?.firstName : "" : "",
-            lastName: item.role !== Role.ADMIN ? item?.lastName : "",
+            firstName:
+              item.role !== Role.HR
+                ? item.role !== Role.ADMIN
+                  ? item?.firstName
+                  : ""
+                : "",
+            lastName: item.role === Role.ADMIN ? "" : item?.lastName,
             role: item.role
           });
       });

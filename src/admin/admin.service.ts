@@ -68,9 +68,6 @@ export class AdminService {
   async upload(file: FileInfoInterface, res: Response) {
     const convertFile = file.buffer.toString();
     const parsedObject = JSON.parse(convertFile);
-    const duplicates = [];
-    const newArray = [];
-
 
     try {
       if (file.mimetype !== "application/json") {
@@ -80,31 +77,34 @@ export class AdminService {
       }
 
       parsedObject.map(async (obj) => {
-        let err = [];
         if (!obj.email.includes("@")) {
-          err.push(obj);
-          res.json({
-            message: `Sorry, we only accept valid email addresses.(missing '@')`,
-            err
+          return res.json({
+            message: `Sorry, we only accept valid email addresses.(missing '@')`
           });
-          throw new Error(`[${obj.email}] does not have @`);
         }
-      });
+        const getAllUsers = await this.userModel
+          .find({ email: obj.email })
+          .exec();
 
-      const users = await this.userModel.insertMany(parsedObject);
+        if (!getAllUsers) {
+          return res.json({
+            message: "Dude the same emails added"
+          });
+        }
 
-      users.map(async (user) => {
-        const { token } = await this.createTokenAndSendEmail(
-          { email: user.email, id: user._id.toString() },
-          process.env.REGISTER_TOKEN_USER
-        );
-        user.registerToken = token;
-        await user.save();
-      });
+        getAllUsers.map(async (user) => {
+          const { token } = await this.createTokenAndSendEmail(
+            { email: user.email, id: user.id.toString() },
+            process.env.REGISTER_TOKEN_USER
+          );
+          user.registerToken = token;
+          await user.save();
+        });
 
-      res.json({
-        users: users.map((item) => AdminService.filterMethod(item)),
-        status: "Success"
+        return res.json({
+          users: getAllUsers.map((item) => AdminService.filterMethod(item)),
+          status: "Success"
+        });
       });
     } catch ({ code, message, result }) {
       if (code === 11000) {
@@ -150,10 +150,10 @@ export class AdminService {
   async addHumanResource(obj: HrDto, res: Response) {
     try {
       const newHr = new this.humanResources({
-        name: obj.name,
+        name: obj.firstName,
         lastName: obj.lastname,
         email: obj.email,
-        company: obj.company,
+        company: obj.company
       });
       const data = await newHr.save();
 
@@ -191,5 +191,4 @@ export class AdminService {
       _id: result._id,
     };
   }
-
 }
