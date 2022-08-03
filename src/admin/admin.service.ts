@@ -120,7 +120,7 @@ export class AdminService {
   async addHumanResource(obj: HrDto, res: Response) {
     try {
       const newHr = new this.humanResources({
-        name: obj.name,
+        firstName: obj.firstName,
         lastName: obj.lastname,
         email: obj.email,
         company: obj.company,
