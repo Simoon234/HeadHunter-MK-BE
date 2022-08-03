@@ -169,13 +169,25 @@ export class AdminService {
     });
 
     if (!admin) {
-      throw new Error('Admin not found');
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          error: 'Admin not found',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     const checkPassword = await verifyPassword(password, admin.password);
 
     if (checkPassword === false) {
-      throw new Error('Password is incorrect');
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          error: 'Password is incorrect',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     if (admin && checkPassword) {
