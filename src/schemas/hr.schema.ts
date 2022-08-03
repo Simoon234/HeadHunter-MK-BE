@@ -1,32 +1,32 @@
-import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { User } from "./user.schema";
-import mongoose from "mongoose";
-import { Role } from "../types";
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { User } from './user.schema';
+import mongoose from 'mongoose';
+import { Role } from '../types';
 
 @Schema()
 export class HumanResources {
   @Prop({
     type: String,
-    required: true
+    required: true,
   })
   name: string;
 
   @Prop({
     type: String,
-    required: true
+    required: true,
   })
   lastName: string;
 
   @Prop({
     type: String,
     unique: true,
-    required: true
+    required: true,
   })
   email: string;
 
   @Prop({
     type: String,
-    required: true
+    required: true,
   })
   company: string;
 
@@ -34,50 +34,50 @@ export class HumanResources {
     type: Number,
     min: 1,
     max: 999,
-    default: 1
+    default: 1,
   })
   maxReservedStudents: number;
 
   @Prop({
     type: String,
-    default: null
+    default: null,
   })
   password: string;
 
   @Prop({
     type: Boolean,
-    default: false
+    default: false,
   })
   active: boolean;
 
   @Prop({
     type: String,
     default: null,
-    nullable: true
+    nullable: true,
   })
   registerToken: string;
   @Prop({
     type: String,
     default: null,
-    nullable: true
+    nullable: true,
   })
   accessToken: string;
 
   @Prop({
     type: String,
     default: null,
-    nullable: true
+    nullable: true,
   })
   refreshToken: string;
 
   @Prop({
     type: String,
     default: Role.HR,
-    enum: Role
+    enum: Role,
   })
   role: Role.HR;
 
-  @Prop([{ type: mongoose.Schema.Types.ObjectId, ref: "User" }])
+  @Prop([{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }])
   users: User[];
 }
 

@@ -1,4 +1,4 @@
-import { User } from "../schemas/user.schema";
+import { User } from '../schemas/user.schema';
 
 export enum WorkType {
   STAY = 'Na miejscu',
@@ -12,13 +12,13 @@ export enum ContractType {
   UOP = 'UOP',
   B2B = 'B2B',
   UZ = 'UZ',
-  UoD = 'UoD',
+  UOD = 'UoD',
   WHATEVER = 'Brak preferencji',
 }
 
 export enum Apprentice {
-  YES = "true",
-  NO = "false",
+  YES = 'true',
+  NO = 'false',
 }
 
 export enum Status {
@@ -30,7 +30,7 @@ export enum Status {
 // Interfaces
 
 export interface HrInterfaces {
-  name: string;
+  firstName: string;
   lastname: string;
   email: string;
   company: string;
@@ -77,9 +77,8 @@ export interface Payload {
   id: string;
 }
 
-
 export enum Role {
-  ADMIN = "ADMIN",
-  USER = "USER",
-  HR = "HR",
+  ADMIN = 'admin',
+  STUDENT = 'student',
+  HR = 'hr',
 }

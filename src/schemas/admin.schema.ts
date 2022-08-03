@@ -1,6 +1,6 @@
-import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Document } from "mongoose";
-import { Role } from "src/types";
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document } from 'mongoose';
+import { Role } from 'src/types';
 
 export type AdminDocument = Admin & Document;
 
@@ -23,7 +23,7 @@ export class Admin implements AdminInterface {
   @Prop({
     type: String,
     enum: Role,
-    default: Role.ADMIN
+    default: Role.ADMIN,
   })
   role: Role.ADMIN;
 }
