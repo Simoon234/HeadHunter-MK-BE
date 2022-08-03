@@ -5,6 +5,7 @@ import { HrDto } from "../hr/dto/hr.dto";
 import { ChangePassword } from "./dto/changePassword.dto";
 import { Roles } from "../decorators/roles.decorator";
 import { AddUsersDto } from "./dto/add-users.dto";
+import { Role } from "../types";
 
 @Controller("/admin")
 export class AdminController {
