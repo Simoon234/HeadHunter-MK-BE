@@ -1,5 +1,11 @@
-import { IsArray, IsBoolean, IsEnum, IsNumber, IsString } from "class-validator";
-import { ContractType, WorkType } from "../../types";
+import {
+  IsArray,
+  IsBoolean,
+  IsEnum,
+  IsNumber,
+  IsString,
+} from 'class-validator';
+import { ContractType, WorkType } from '../../types';
 
 export class UserUpdateDto {
   @IsString()
@@ -22,6 +28,9 @@ export class UserUpdateDto {
 
   @IsArray()
   projectUrls: string[];
+
+  @IsArray()
+  scrumUrls: string[];
 
   @IsString()
   bio: string;
@@ -52,6 +61,4 @@ export class UserUpdateDto {
 
   @IsString()
   courses: string;
-
-  avatarUrl: string;
 }

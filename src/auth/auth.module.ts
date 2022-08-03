@@ -1,23 +1,22 @@
-import { Module } from "@nestjs/common";
-import { AuthController } from "./auth.controller";
-import { AuthService } from "./auth.service";
-import { MongooseModule } from "@nestjs/mongoose";
-import { User, UserSchema } from "src/schemas/user.schema";
-import { HrSchema, HumanResources } from "../schemas/hr.schema";
-import { JwtStr } from "./jwt.startegy";
-import { EmailModule } from "../email/email.module";
+import { Module } from '@nestjs/common';
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
+import { MongooseModule } from '@nestjs/mongoose';
+import { User, UserSchema } from 'src/schemas/user.schema';
+import { HrSchema, HumanResources } from '../schemas/hr.schema';
+import { JwtStr } from './jwt.startegy';
+import { EmailModule } from '../email/email.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
-      { name: HumanResources.name, schema: HrSchema }
+      { name: HumanResources.name, schema: HrSchema },
     ]),
-    EmailModule
+    EmailModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStr],
-  exports: [JwtStr]
+  exports: [JwtStr],
 })
-export class AuthModule {
-}
+export class AuthModule {}

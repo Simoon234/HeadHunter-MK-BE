@@ -1,6 +1,6 @@
-import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Document } from "mongoose";
-import { Apprentice, ContractType, Role, Status, WorkType } from "../types";
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document } from 'mongoose';
+import { Apprentice, ContractType, Role, Status, WorkType } from '../types';
 
 export type UserDocument = User & Document;
 
@@ -9,12 +9,12 @@ export class User {
   @Prop({
     type: String,
     required: true,
-    unique: true
+    unique: true,
   })
   email: string;
 
   @Prop({
-    type: String
+    type: String,
   })
   password: string;
 
@@ -22,7 +22,7 @@ export class User {
     type: Number,
     default: 0,
     min: 0,
-    max: 5
+    max: 5,
   })
   courseCompletion: number;
 
@@ -31,7 +31,7 @@ export class User {
     required: true,
     default: 0,
     min: 0,
-    max: 5
+    max: 5,
   })
   courseEngagment: number;
 
@@ -40,7 +40,7 @@ export class User {
     required: true,
     default: 0,
     min: 0,
-    max: 5
+    max: 5,
   })
   projectDegree: number;
 
@@ -49,162 +49,162 @@ export class User {
     required: true,
     default: 0,
     min: 0,
-    max: 5
+    max: 5,
   })
   teamProjectDegree: number;
 
   @Prop({
     type: Array,
     required: true,
-    default: []
+    default: [],
   })
   bonusProjectUrls: string[];
 
   @Prop({
     type: Number,
-    default: null
+    default: null,
   })
   tel: number;
 
   @Prop({
     type: String,
-    default: null
+    default: null,
   })
   firstName: string;
 
   @Prop({
     type: String,
-    default: null
+    default: null,
   })
   lastName: string;
 
   @Prop({
     type: String,
-    default: null
+    default: null,
   })
   githubUsername: string;
 
   @Prop({
     type: Array,
-    default: []
+    default: [],
   })
   portfolioUrls: string[];
 
   @Prop({
     default: [],
-    type: Array
+    type: Array,
   })
   projectUrls: string[];
 
   @Prop({
-    type: String
+    type: String,
   })
   bio: string;
 
   @Prop({
     type: String,
     enum: WorkType,
-    default: WorkType.WHATEVER
+    default: WorkType.WHATEVER,
   })
   expectedTypeWork: WorkType;
 
   @Prop({
     type: String,
-    default: null
+    default: null,
   })
   targetWorkCity: string;
 
   @Prop({
     type: String,
     enum: ContractType,
-    default: ContractType.WHATEVER
+    default: ContractType.WHATEVER,
   })
   expectedContractType: ContractType;
 
   @Prop({
     type: Number,
-    default: 0
+    default: 0,
   })
   expectedSalary: number;
 
   @Prop({
     type: Boolean,
     enum: Apprentice,
-    default: Apprentice.NO
+    default: Apprentice.NO,
   })
   canTakeApprenticeship: Apprentice;
 
   @Prop({
     type: Number,
-    default: null
+    default: null,
   })
   monthsOfCommercialExp: number;
 
   @Prop({
-    type: String
+    type: String,
   })
   education: string;
 
   @Prop({
-    type: String
+    type: String,
   })
   workExperience: string;
 
   @Prop({
-    type: String
+    type: String,
   })
   courses: string;
 
   @Prop({
     type: Boolean,
-    default: 0
+    default: 0,
   })
   active: boolean;
 
   @Prop({
     type: String,
     default: Status.ACTIVE,
-    enum: Status
+    enum: Status,
   })
   status: Status;
 
   @Prop({
     type: String,
     default:
-      "https://www.deviantart.com/karmaanddestiny/art/Default-user-icon-4-858661084"
+      'https://www.deviantart.com/karmaanddestiny/art/Default-user-icon-4-858661084',
   })
   avatarUrl: string;
 
   @Prop({
     type: String,
-    default: null
+    default: null,
   })
   registerToken: string;
 
   @Prop({
     type: String,
     default: null,
-    nullable: true
+    nullable: true,
   })
   accessToken: string;
 
   @Prop({
     type: String,
     default: null,
-    nullable: true
+    nullable: true,
   })
   refreshToken: string;
 
   @Prop({
     type: String,
     default: Role.USER,
-    enum: Role
+    enum: Role,
   })
   role: Role.USER;
 
   @Prop({
     default: null,
-    type: String
+    type: String,
   })
   addedByHr: string;
 }

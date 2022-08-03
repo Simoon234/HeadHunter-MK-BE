@@ -1,9 +1,9 @@
-import { Strategy } from "passport-jwt";
-import { PassportStrategy } from "@nestjs/passport";
-import { Injectable, UnauthorizedException } from "@nestjs/common";
-import { User } from "../schemas/user.schema";
-import { Model } from "mongoose";
-import { InjectModel } from "@nestjs/mongoose";
+import { Strategy } from 'passport-jwt';
+import { PassportStrategy } from '@nestjs/passport';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { User } from '../schemas/user.schema';
+import { Model } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
 
 function cookieExtract(req: any): null | string {
   return req && req.cookies ? req.cookies?.jwt ?? null : null;
@@ -14,7 +14,7 @@ export class JwtStr extends PassportStrategy(Strategy) {
   constructor(@InjectModel(User.name) private user: Model<User>) {
     super({
       jwtFromRequest: cookieExtract,
-      secretOrKey: process.env.LOG_TOKEN
+      secretOrKey: process.env.LOG_TOKEN,
     });
   }
 
@@ -24,7 +24,7 @@ export class JwtStr extends PassportStrategy(Strategy) {
     }
 
     const user = await this.user.findOne({
-      where: { accessToken: payload.id }
+      where: { accessToken: payload.id },
     });
 
     if (!user) {

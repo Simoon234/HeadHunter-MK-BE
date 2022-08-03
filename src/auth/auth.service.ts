@@ -1,40 +1,39 @@
-import { HttpException, HttpStatus, Inject, Injectable } from "@nestjs/common";
-import { InjectModel } from "@nestjs/mongoose";
-import { User } from "src/schemas/user.schema";
-import { Model } from "mongoose";
-import { LogDto } from "./dto/log.dto";
-import { v4 as uuid } from "uuid";
-import { Response } from "express";
-import { sign } from "jsonwebtoken";
-import { RegisterDto } from "./dto/register.dto";
-import { hashPassword, verifyPassword } from "../utils/hashPassword";
-import { HumanResources } from "src/schemas/hr.schema";
-import { EmailService } from "../email/email.service";
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { User } from 'src/schemas/user.schema';
+import { Model } from 'mongoose';
+import { LogDto } from './dto/log.dto';
+import { v4 as uuid } from 'uuid';
+import { Response } from 'express';
+import { sign } from 'jsonwebtoken';
+import { RegisterDto } from './dto/register.dto';
+import { hashPassword, verifyPassword } from '../utils/hashPassword';
+import { HumanResources } from 'src/schemas/hr.schema';
+import { EmailService } from '../email/email.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectModel(User.name) private user: Model<User>,
     @InjectModel(HumanResources.name) private hr: Model<HumanResources>,
-    @Inject(EmailService) private mailService: EmailService
-  ) {
-  }
+    @Inject(EmailService) private mailService: EmailService,
+  ) {}
 
   private static createToken(currentTokenId: string): {
     accessToken: string;
     expiresIn: number;
   } {
     const payload: { id: string } = {
-      id: currentTokenId
+      id: currentTokenId,
     };
     const expiresIn = 60 * 60 * 24;
     const accessToken = sign(payload, process.env.LOG_TOKEN, {
-      expiresIn
+      expiresIn,
     });
 
     return {
       accessToken,
-      expiresIn
+      expiresIn,
     };
   }
 
@@ -43,31 +42,31 @@ export class AuthService {
 
     try {
       const user = await this.user.findOne({
-        email
+        email,
       });
 
       if (user.accessToken) {
         res.json({
-          message: "You are already logged in."
+          message: 'You are already logged in.',
         });
       }
 
       const pwd = await verifyPassword(password, user.password);
 
       if (!user && pwd === false) {
-        return res.json({ error: "Invalid login" });
+        return res.json({ error: 'Invalid login' });
       }
 
       const token = AuthService.createToken(await this.generateToken(user));
 
       return res
-        .cookie("jwt", token.accessToken, {
+        .cookie('jwt', token.accessToken, {
           secure: false,
-          domain: "localhost",
-          httpOnly: true
+          domain: 'localhost',
+          httpOnly: true,
         })
         .json({
-          message: "Successfully logged in!"
+          message: 'Successfully logged in!',
         });
     } catch (e) {
       console.log(e);
@@ -81,12 +80,12 @@ export class AuthService {
     id: string,
     registerToken: string,
     obj: RegisterDto,
-    res: Response
+    res: Response,
   ) {
     try {
       if (obj.password !== obj.passwordRepeat) {
         res.json({
-          message: "Passwords are not the same"
+          message: 'Passwords are not the same',
         });
       }
 
@@ -94,23 +93,23 @@ export class AuthService {
 
       await this.hr.updateOne(
         { _id: id },
-        { $set: { password: hashPwd, active: true, registerToken: null } }
+        { $set: { password: hashPwd, active: true, registerToken: null } },
       );
 
       const get = await this.hr.findById({ _id: id });
       if (get.registerToken === null && get.active === true) {
         res.json({
-          message: "You are already registered"
+          message: 'You are already registered',
         });
       }
 
       return res.json({
         registeredId: get._id,
-        success: true
+        success: true,
       });
     } catch (err) {
       res.json({
-        message: err.message
+        message: err.message,
       });
       console.error(err);
     }
@@ -120,12 +119,12 @@ export class AuthService {
     id: string,
     registerToken: string,
     obj: RegisterDto,
-    res: Response
+    res: Response,
   ) {
     try {
       if (obj.password !== obj.passwordRepeat) {
         res.json({
-          message: "Passwords are not the same"
+          message: 'Passwords are not the same',
         });
       }
 
@@ -133,24 +132,24 @@ export class AuthService {
 
       await this.user.updateOne(
         { _id: id },
-        { $set: { password: hashPwd, active: true, registerToken: null } }
+        { $set: { password: hashPwd, active: true, registerToken: null } },
       );
 
       const get = await this.user.findById({ _id: id });
 
       if (get.registerToken === null && get.active === true) {
         res.json({
-          message: "You are already registered"
+          message: 'You are already registered',
         });
       } else {
         res.json({
           registeredId: get._id,
-          success: true
+          success: true,
         });
       }
     } catch (err) {
       res.json({
-        message: err.message
+        message: err.message,
       });
       console.error(err);
     }
@@ -161,17 +160,17 @@ export class AuthService {
       person.accessToken = null;
       await person.save();
       return res
-        .clearCookie("jwt", {
+        .clearCookie('jwt', {
           secure: false,
-          domain: "localhost",
-          httpOnly: true
+          domain: 'localhost',
+          httpOnly: true,
         })
         .json({
-          message: "Logged out."
+          message: 'Logged out.',
         });
     } catch (err) {
       res.json({
-        error: err.message
+        error: err.message,
       });
     }
   }
@@ -180,13 +179,13 @@ export class AuthService {
     const user = await this.user.findOne({ email });
 
     if (!user) {
-      throw new HttpException("No user found", HttpStatus.NOT_FOUND);
+      throw new HttpException('No user found', HttpStatus.NOT_FOUND);
     }
 
     if (!user.email) {
       throw new HttpException(
         `No user with that: (${email}) email`,
-        HttpStatus.BAD_REQUEST
+        HttpStatus.BAD_REQUEST,
       );
     }
 
@@ -194,19 +193,19 @@ export class AuthService {
       { email: user.email },
       process.env.REFRESH_TOKEN_REMINDER,
       {
-        expiresIn: "1h"
-      }
+        expiresIn: '1h',
+      },
     );
     await user.save();
 
     await this.mailService.sendEmail(
       user.email,
-      "Password reset",
-      `<p>Click <a href="ERROR">here</a> to reset your password</p>`
+      'Password reset',
+      `<p>Click <a href="ERROR">here</a> to reset your password</p>`,
     );
 
     return {
-      message: "Check your email address."
+      message: 'Check your email address.',
     };
   }
 

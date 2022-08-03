@@ -1,16 +1,16 @@
-import { HttpException, HttpStatus, Inject, Injectable } from "@nestjs/common";
-import { InjectModel } from "@nestjs/mongoose";
-import { Model } from "mongoose";
-import { Response } from "express";
-import { EmailService } from "../email/email.service";
-import { sign, verify } from "jsonwebtoken";
-import { HrDto } from "../hr/dto/hr.dto";
-import { hashPassword, verifyPassword } from "../utils/hashPassword";
-import { ChangePasswordInterface, FileInfoInterface, Payload } from "../types";
-import { HumanResources } from "../schemas/hr.schema";
-import { User, UserDocument } from "../schemas/user.schema";
-import { Admin, AdminDocument } from "../schemas/admin.schema";
-import { ChangePassword } from "./dto/changePassword.dto";
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Response } from 'express';
+import { EmailService } from '../email/email.service';
+import { sign, verify } from 'jsonwebtoken';
+import { HrDto } from '../hr/dto/hr.dto';
+import { hashPassword, verifyPassword } from '../utils/hashPassword';
+import { ChangePasswordInterface, FileInfoInterface, Payload } from '../types';
+import { HumanResources } from '../schemas/hr.schema';
+import { User, UserDocument } from '../schemas/user.schema';
+import { Admin, AdminDocument } from '../schemas/admin.schema';
+import { ChangePassword } from './dto/changePassword.dto';
 
 @Injectable()
 export class AdminService {
@@ -19,9 +19,8 @@ export class AdminService {
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @Inject(EmailService) private emailService: EmailService,
     @InjectModel(HumanResources.name)
-    private humanResources: Model<HumanResources>
-  ) {
-  }
+    private humanResources: Model<HumanResources>,
+  ) {}
 
   private static filterMethod(obj) {
     const {
@@ -30,7 +29,7 @@ export class AdminService {
       courseEngagment,
       projectDegree,
       teamProjectDegree,
-      bonusProjectUrls
+      bonusProjectUrls,
     } = obj;
     return {
       email,
@@ -38,7 +37,7 @@ export class AdminService {
       courseEngagment,
       projectDegree,
       teamProjectDegree,
-      bonusProjectUrls
+      bonusProjectUrls,
     };
   }
 
@@ -47,16 +46,16 @@ export class AdminService {
     const parsedObject = JSON.parse(convertFile);
 
     try {
-      if (file.mimetype !== "application/json") {
+      if (file.mimetype !== 'application/json') {
         return res.json({
-          message: "Sorry, we only accept JSON files."
+          message: 'Sorry, we only accept JSON files.',
         });
       }
 
       parsedObject.map(async (obj) => {
-        if (!obj.email.includes("@")) {
+        if (!obj.email.includes('@')) {
           res.json({
-            message: `Sorry, we only accept valid email addresses. (${obj.email}) (missing '@')`
+            message: `Sorry, we only accept valid email addresses. (${obj.email}) (missing '@')`,
           });
           throw new Error(`[${obj.email}] does not have @`);
         }
@@ -67,7 +66,7 @@ export class AdminService {
       users.map(async (user) => {
         const { token } = await this.createTokenAndSendEmail(
           { email: user.email, id: user._id.toString() },
-          process.env.REGISTER_TOKEN_USER
+          process.env.REGISTER_TOKEN_USER,
         );
         user.registerToken = token;
         await user.save();
@@ -75,13 +74,13 @@ export class AdminService {
 
       res.json({
         users: users.map((item) => AdminService.filterMethod(item)),
-        status: "Success"
+        status: 'Success',
       });
     } catch ({ code, message, result }) {
       if (code === 11000) {
         res.json({
           duplicates: true,
-          insertedNewElement: result.nInserted
+          insertedNewElement: result.nInserted,
         });
 
         console.error(message);
@@ -91,7 +90,7 @@ export class AdminService {
 
   async changePassword(
     email: string,
-    obj: ChangePassword
+    obj: ChangePassword,
   ): Promise<ChangePasswordInterface> {
     if (obj.password !== obj.passwordRepeat) {
       throw new HttpException(
@@ -111,7 +110,7 @@ export class AdminService {
 
     return {
       email: admin.email,
-      message: "Successfully updated"
+      message: 'Successfully updated',
     };
   }
 
@@ -130,7 +129,7 @@ export class AdminService {
 
       const { token } = await this.createTokenAndSendEmail(
         { email: newHr.email, id: newHr._id.toString() },
-        process.env.REGISTER_TOKEN_USER
+        process.env.REGISTER_TOKEN_USER,
       );
 
       newHr.registerToken = token;
@@ -138,13 +137,13 @@ export class AdminService {
 
       return res.json({
         id: data._id,
-        email: data.email
+        email: data.email,
       });
     } catch (e) {
       if (e.code === 11000) {
         res.json({
-          message: "Email exist. Please try again.",
-          success: false
+          message: 'Email exist. Please try again.',
+          success: false,
         });
       }
       console.error(e.message);
@@ -173,10 +172,7 @@ export class AdminService {
       throw new Error('Admin not found');
     }
 
-    const checkPassword = await verifyPassword(
-      password,
-      admin.password
-    );
+    const checkPassword = await verifyPassword(password, admin.password);
 
     if (checkPassword === false) {
       throw new Error('Password is incorrect');
@@ -186,30 +182,30 @@ export class AdminService {
       admin.token = sign({ email: admin.email }, process.env.ADMIN_TOKEN_LOGIN);
       return {
         id: admin._id,
-        email: admin.email
+        email: admin.email,
       };
     }
   }
 
   private async createTokenAndSendEmail(payload: Payload, secret: string) {
     const token = sign({ email: payload.email, id: payload.id }, secret, {
-      expiresIn: "24h"
+      expiresIn: '24h',
     });
     const checkTokenValid = verify(token, secret);
     if (checkTokenValid) {
       await this.emailService.sendEmail(
         payload.email,
-        "Register",
-        `Click link to register. + ${payload.id} + ${token}`
+        'Register',
+        `Click link to register. + ${payload.id} + ${token}`,
       );
     } else {
-      throw new Error("Token is not valid anymore");
+      throw new Error('Token is not valid anymore');
     }
 
     return {
       payload,
       secret,
-      token
+      token,
     };
   }
 }

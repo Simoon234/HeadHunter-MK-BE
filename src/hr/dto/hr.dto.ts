@@ -1,10 +1,10 @@
-import { IsEmail, IsNotEmpty, IsString } from "class-validator";
-import { HrInterfaces } from "../../types";
+import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import { HrInterfaces } from '../../types';
 
 export class HrDto implements HrInterfaces {
   @IsString()
   @IsNotEmpty()
-  name: string;
+  firstName: string;
 
   @IsString()
   @IsNotEmpty()
@@ -18,4 +18,8 @@ export class HrDto implements HrInterfaces {
   @IsString()
   @IsNotEmpty()
   company: string;
+
+  @IsString()
+  @IsNotEmpty()
+  maxStudents: number;
 }
