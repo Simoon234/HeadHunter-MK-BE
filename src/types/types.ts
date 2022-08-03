@@ -1,4 +1,4 @@
-import { User } from '../schemas/user.schema';
+import { User } from "../schemas/user.schema";
 
 export enum WorkType {
   STAY = 'Na miejscu',
@@ -78,7 +78,16 @@ export interface Payload {
 }
 
 export enum Role {
-  ADMIN = 'admin',
-  STUDENT = 'student',
-  HR = 'hr',
+  ADMIN = "admin",
+  STUDENT = "student",
+  HR = "hr",
+}
+
+export interface AddStudentInterface {
+  email: string;
+  courseCompletion: number;
+  courseEngagement: number;
+  projectDegree: number;
+  teamProjectDegree: number;
+  bonusProjectUrls: string[];
 }

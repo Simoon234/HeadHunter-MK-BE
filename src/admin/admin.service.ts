@@ -6,11 +6,12 @@ import { EmailService } from "../email/email.service";
 import { sign, verify } from "jsonwebtoken";
 import { HrDto } from "../hr/dto/hr.dto";
 import { hashPassword } from "../utils/hashPassword";
-import { ChangePasswordInterface, FileInfoInterface, Payload } from "../types";
+import { ChangePasswordInterface, Payload } from "../types";
 import { HumanResources } from "../schemas/hr.schema";
 import { User, UserDocument } from "../schemas/user.schema";
 import { Admin, AdminDocument } from "../schemas/admin.schema";
 import { ChangePassword } from "./dto/changePassword.dto";
+import { AddUsersDto } from "./dto/add-users.dto";
 
 @Injectable()
 export class AdminService {
@@ -65,18 +66,9 @@ export class AdminService {
     };
   }
 
-  async upload(file: FileInfoInterface, res: Response) {
-    const convertFile = file.buffer.toString();
-    const parsedObject = JSON.parse(convertFile);
-
+  async upload(file: AddUsersDto[], res: Response) {
     try {
-      if (file.mimetype !== "application/json") {
-        return res.json({
-          message: "Sorry, we only accept JSON files."
-        });
-      }
-
-      parsedObject.map(async (obj) => {
+      return file.map(async (obj) => {
         if (!obj.email.includes("@")) {
           return res.json({
             message: `Sorry, we only accept valid email addresses.(missing '@')`
@@ -91,7 +83,8 @@ export class AdminService {
             message: "Dude the same emails added"
           });
         }
-
+        const user = new this.userModel(file);
+        await user.save();
         getAllUsers.map(async (user) => {
           const { token } = await this.createTokenAndSendEmail(
             { email: user.email, id: user.id.toString() },
@@ -102,7 +95,7 @@ export class AdminService {
         });
 
         return res.json({
-          users: getAllUsers.map((item) => AdminService.filterMethod(item)),
+          users: file.map((item) => AdminService.filterMethod(item)),
           status: "Success"
         });
       });
@@ -110,12 +103,14 @@ export class AdminService {
       if (code === 11000) {
         res.json({
           duplicates: true,
-          insertedNewElement: result.nInserted
+          message,
+          code
         });
 
         console.error(message);
       }
     }
+
   }
 
   async changePassword(
