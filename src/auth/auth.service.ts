@@ -172,7 +172,11 @@ export class AuthService {
   }
 
   async checkAuth(person, res: Response) {
-    res.json({ success: true, role: person.role });
+    try {
+      res.json({ success: true, role: person.role });
+    } catch (e) {
+      res.json({ success: false, message: e.message });
+    }
   }
 
   async logout(person, res: Response) {
