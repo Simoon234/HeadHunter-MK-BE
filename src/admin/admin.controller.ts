@@ -1,21 +1,29 @@
-import { Body, Controller, HttpCode, Inject, Param, Post, Put, Res } from "@nestjs/common";
-import { AdminService } from "./admin.service";
-import { Response } from "express";
-import { HrDto } from "../hr/dto/hr.dto";
-import { ChangePassword } from "./dto/changePassword.dto";
-import { Roles } from "../decorators/roles.decorator";
-import { AddUsersDto } from "./dto/add-users.dto";
-import { Role } from "../types";
+import {
+  Body,
+  Controller,
+  HttpCode,
+  Inject,
+  Param,
+  Post,
+  Put,
+  Res,
+} from '@nestjs/common';
+import { AdminService } from './admin.service';
+import { Response } from 'express';
+import { HrDto } from '../hr/dto/hr.dto';
+import { UpdateAdmin } from './dto/update-admin.dto';
+import { Roles } from '../decorators/roles.decorator';
+import { AddUsersDto } from './dto/add-users.dto';
+import { Role } from '../types';
 
-@Controller("/admin")
+@Controller('/admin')
 export class AdminController {
-  constructor(@Inject(AdminService) private adminService: AdminService) {
-  }
+  constructor(@Inject(AdminService) private adminService: AdminService) {}
 
   @HttpCode(200)
-  @Put("/changePassword/:email")
-  changePassword(@Param("email") email, @Body() obj: ChangePassword) {
-    return this.adminService.changePassword(email, obj);
+  @Put('/update/:id')
+  update(@Param('id') id, @Body() obj: UpdateAdmin, @Res() res: Response) {
+    return this.adminService.update(id, obj, res);
   }
 
   @Roles(Role.ADMIN)
@@ -27,7 +35,7 @@ export class AdminController {
 
   @Roles(Role.ADMIN)
   @HttpCode(201)
-  @Post("/upload")
+  @Post('/upload')
   uploadUsers(@Body() file: AddUsersDto[], @Res() res: Response) {
     return this.adminService.upload(file, res);
   }

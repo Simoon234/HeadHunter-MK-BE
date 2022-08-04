@@ -1,17 +1,31 @@
-import { Body, Controller, Get, Inject, Param, Post, Res, UseGuards } from "@nestjs/common";
-import { AuthService } from "./auth.service";
-import { LogDto } from "./dto/log.dto";
-import { RegisterDto } from "./dto/register.dto";
-import { Response } from "express";
-import { JwtAuthGuard } from "./guards/jwt.guard";
-import { ObjectPerson } from "../decorators/object.decorator";
+import {
+  Body,
+  Controller,
+  Get,
+  Inject,
+  Param,
+  Post,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
+import { AuthService } from './auth.service';
+import { LogDto } from './dto/log.dto';
+import { RegisterDto } from './dto/register.dto';
+import { Response } from 'express';
+import { JwtAuthGuard } from './guards/jwt.guard';
+import { ObjectPerson } from '../decorators/object.decorator';
 
-@Controller("/auth")
+@Controller('/auth')
 export class AuthController {
-  constructor(@Inject(AuthService) private authService: AuthService) {
+  constructor(@Inject(AuthService) private authService: AuthService) {}
+
+  @UseGuards(JwtAuthGuard)
+  @Get('/check')
+  checkAuth(@ObjectPerson() person: any, @Res() res: Response) {
+    return this.authService.checkAuth(person, res);
   }
 
-  @Post("/login")
+  @Post('/login')
   log(@Body() log: LogDto, @Res() res: Response) {
     return this.authService.login(log, res);
   }

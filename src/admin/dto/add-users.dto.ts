@@ -1,5 +1,5 @@
-import { IsNotEmpty, IsNumber, IsString } from "class-validator";
-import { AddStudentInterface } from "../../types";
+import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { AddStudentInterface } from '../../types';
 
 export class AddUsersDto implements AddStudentInterface {
   @IsString()

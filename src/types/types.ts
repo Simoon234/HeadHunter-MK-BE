@@ -1,4 +1,4 @@
-import { User } from "../schemas/user.schema";
+import { User } from '../schemas/user.schema';
 
 export enum WorkType {
   STAY = 'Na miejscu',
@@ -31,7 +31,7 @@ export enum Status {
 
 export interface HrInterfaces {
   firstName: string;
-  lastname: string;
+  lastName: string;
   email: string;
   company: string;
 }
@@ -58,11 +58,6 @@ export interface UserFilterInterface {
   monthsOfCommercialExp: number;
 }
 
-export interface ChangePasswordInterface {
-  message: string;
-  email: string;
-}
-
 export interface FileInfoInterface {
   fieldname: string;
   originalname: string;
@@ -78,9 +73,9 @@ export interface Payload {
 }
 
 export enum Role {
-  ADMIN = "admin",
-  STUDENT = "student",
-  HR = "hr",
+  ADMIN = 'admin',
+  STUDENT = 'student',
+  HR = 'hr',
 }
 
 export interface AddStudentInterface {

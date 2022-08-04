@@ -1,17 +1,18 @@
-import { HttpException, HttpStatus, Inject, Injectable } from "@nestjs/common";
-import { InjectModel } from "@nestjs/mongoose";
-import { Model } from "mongoose";
-import { Response } from "express";
-import { EmailService } from "../email/email.service";
-import { sign, verify } from "jsonwebtoken";
-import { HrDto } from "../hr/dto/hr.dto";
-import { hashPassword } from "../utils/hashPassword";
-import { ChangePasswordInterface, Payload } from "../types";
-import { HumanResources } from "../schemas/hr.schema";
-import { User, UserDocument } from "../schemas/user.schema";
-import { Admin, AdminDocument } from "../schemas/admin.schema";
-import { ChangePassword } from "./dto/changePassword.dto";
-import { AddUsersDto } from "./dto/add-users.dto";
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Response } from 'express';
+import { EmailService } from '../email/email.service';
+import { sign, verify } from 'jsonwebtoken';
+import { HrDto } from '../hr/dto/hr.dto';
+import { hashPassword } from '../utils/hashPassword';
+import { Payload } from '../types';
+import { HumanResources } from '../schemas/hr.schema';
+import { User, UserDocument } from '../schemas/user.schema';
+import { Admin, AdminDocument } from '../schemas/admin.schema';
+import { UpdateAdmin } from './dto/update-admin.dto';
+import { AddUsersDto } from './dto/add-users.dto';
+import { ObjectId } from 'mongodb';
 
 @Injectable()
 export class AdminService {
@@ -20,9 +21,8 @@ export class AdminService {
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @Inject(EmailService) private emailService: EmailService,
     @InjectModel(HumanResources.name)
-    private humanResources: Model<HumanResources>
-  ) {
-  }
+    private humanResources: Model<HumanResources>,
+  ) {}
 
   private static filterMethod(obj) {
     const {
@@ -31,7 +31,7 @@ export class AdminService {
       courseEngagment,
       projectDegree,
       teamProjectDegree,
-      bonusProjectUrls
+      bonusProjectUrls,
     } = obj;
     return {
       email,
@@ -39,45 +39,40 @@ export class AdminService {
       courseEngagment,
       projectDegree,
       teamProjectDegree,
-      bonusProjectUrls
+      bonusProjectUrls,
     };
   }
 
   async createTokenAndSendEmail(payload: Payload, secret: string) {
     const token = sign({ email: payload.email, id: payload.id }, secret, {
-      expiresIn: "24h"
+      expiresIn: '24h',
     });
 
     const checkTokenValid = verify(token, secret);
     if (checkTokenValid) {
-      await this.emailService.sendEmail(
-        payload.email,
-        "Register",
-        `Click link to register. + ${payload.id} + ${token}`
-      );
+      // await this.emailService.sendEmail(
+      //   payload.email,
+      //   'Register',
+      //   `Click link to register. + ${payload.id} + ${token}`,
+      // );
     } else {
-      throw new Error("Token is not valid anymore");
+      throw new Error('Token is not valid anymore');
     }
 
     return {
       payload,
       secret,
-      token
+      token,
     };
   }
 
   async upload(file: AddUsersDto[], res: Response) {
-    let errorMessage = null;
     try {
       file.map(async (obj) => {
         const { email } = obj;
 
-        if (!email.includes("@")) {
-          errorMessage = "Email address is not valid";
-          throw new HttpException(
-            `Email address is not correct. ${email}`,
-            HttpStatus.BAD_REQUEST
-          );
+        if (!email.includes('@')) {
+          return;
         }
 
         const getAllUsers = await this.userModel.find({ email }).exec();
@@ -93,63 +88,68 @@ export class AdminService {
           getAll.map(async (user) => {
             const { token } = await this.createTokenAndSendEmail(
               { email: user.email, id: user._id.toString() },
-              process.env.REGISTER_TOKEN_USER
+              process.env.REGISTER_TOKEN_USER,
             );
 
             user.registerToken = token;
             await user.save();
           });
-        } else {
-          errorMessage = "Duplicates.";
         }
       });
-
-      if (errorMessage === null) {
-        res.json({
-          message: errorMessage
-        });
-      } else {
-        res.json({
-          message: "OK",
-          errorMessage
-        });
-      }
+      res.json({
+        success: true,
+      });
     } catch ({ code, message, result }) {
       if (code === 11000) {
         res.json({
-          duplicates: true,
-          message,
-          code
+          success: false,
+          code,
         });
         console.error(message);
       }
     }
   }
 
-  async changePassword(
-    email: string,
-    obj: ChangePassword
-  ): Promise<ChangePasswordInterface> {
-    if (obj.password !== obj.passwordRepeat) {
-      throw new HttpException(
-        'Password are not the same.',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-    const hashedPwd = await hashPassword(obj.password);
-    const admin = await this.adminModel.findOneAndUpdate(
-      { email },
-      {
-        $set: {
-          password: hashedPwd,
-        },
-      },
-    );
+  async update(id: string, obj: UpdateAdmin, res: Response): Promise<void> {
+    try {
+      let objToSave = {};
+      if (obj.password) {
+        if (obj.password !== obj.passwordRepeat) {
+          throw new HttpException(
+            'Password are not the same.',
+            HttpStatus.BAD_REQUEST,
+          );
+        }
 
-    return {
-      email: admin.email,
-      message: "Successfully updated"
-    };
+        const hashedPwd = await hashPassword(obj.password);
+        objToSave = {
+          password: hashedPwd,
+          email: obj.email,
+        };
+      } else {
+        objToSave = {
+          email: obj.email,
+        };
+      }
+
+      await this.adminModel.findOneAndUpdate(
+        { _id: new ObjectId(id) },
+        {
+          $set: {
+            ...objToSave,
+          },
+        },
+      );
+
+      res.json({
+        success: true,
+        message: 'Successfully updated',
+      });
+    } catch {
+      res.json({
+        success: false,
+      });
+    }
   }
 
   //
@@ -159,30 +159,33 @@ export class AdminService {
     try {
       const newHr = new this.humanResources({
         firstName: obj.firstName,
-        lastName: obj.lastname,
+        lastName: obj.lastName,
         email: obj.email,
         company: obj.company,
-        maxStudents: obj.maxStudents
+        maxStudents: obj.maxStudents,
       });
+
       const data = await newHr.save();
 
       const { token } = await this.createTokenAndSendEmail(
         { email: newHr.email, id: newHr._id.toString() },
-        process.env.REGISTER_TOKEN_USER
+        process.env.REGISTER_TOKEN_USER,
       );
 
       newHr.registerToken = token;
       await newHr.save();
-
-      return res.json({
-        id: data._id,
-        email: data.email
+      res.json({
+        success: true,
+        user: {
+          id: data._id,
+          email: data.email,
+        },
       });
     } catch (e) {
       if (e.code === 11000) {
         res.json({
-          message: "Email exist. Please try again.",
-          success: false
+          message: 'Email exist. Please try again.',
+          success: false,
         });
       }
       console.error(e.message);

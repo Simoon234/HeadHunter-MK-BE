@@ -1,13 +1,13 @@
-import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { User } from "./user.schema";
-import mongoose from "mongoose";
-import { Role } from "../types";
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { User } from './user.schema';
+import mongoose from 'mongoose';
+import { Role } from '../types';
 
 @Schema()
 export class HumanResources {
   @Prop({
     type: String,
-    required: true
+    required: true,
   })
   firstName: string;
 
@@ -32,11 +32,11 @@ export class HumanResources {
 
   @Prop({
     type: Number,
-    min: 1,
+    min: 0,
     max: 999,
-    default: 1,
+    default: 0,
   })
-  maxReservedStudents: number;
+  maxStudents: number;
 
   @Prop({
     type: String,
