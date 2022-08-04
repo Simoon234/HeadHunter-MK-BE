@@ -6,13 +6,14 @@ import { EmailService } from '../email/email.service';
 import { sign, verify } from 'jsonwebtoken';
 import { HrDto } from '../hr/dto/hr.dto';
 import { hashPassword } from '../utils/hashPassword';
-import { Payload } from '../types';
+import { Payload, Role } from '../types';
 import { HumanResources } from '../schemas/hr.schema';
 import { User, UserDocument } from '../schemas/user.schema';
 import { Admin, AdminDocument } from '../schemas/admin.schema';
 import { UpdateAdmin } from './dto/update-admin.dto';
 import { AddUsersDto } from './dto/add-users.dto';
 import { ObjectId } from 'mongodb';
+import { ACTIVATION_HR_URL, ACTIVATION_STUDENT_URL } from '../../config';
 
 @Injectable()
 export class AdminService {
@@ -43,18 +44,27 @@ export class AdminService {
     };
   }
 
-  async createTokenAndSendEmail(payload: Payload, secret: string) {
+  async createTokenAndSendEmail(role: Role, payload: Payload, secret: string) {
     const token = sign({ email: payload.email, id: payload.id }, secret, {
       expiresIn: '24h',
     });
 
     const checkTokenValid = verify(token, secret);
     if (checkTokenValid) {
-      // await this.emailService.sendEmail(
-      //   payload.email,
-      //   'Register',
-      //   `Click link to register. + ${payload.id} + ${token}`,
-      // );
+      if (role === Role.HR) {
+        await this.emailService.sendEmail(
+          payload.email,
+          '[Register] MegaK HeadHunters',
+          `Click link to register - ${ACTIVATION_HR_URL}/${payload.id}`,
+        );
+      }
+      if (role === Role.STUDENT) {
+        await this.emailService.sendEmail(
+          payload.email,
+          '[Register] MegaK HeadHunters',
+          `Click link to register - ${ACTIVATION_STUDENT_URL}/${payload.id}`,
+        );
+      }
     } else {
       throw new Error('Token is not valid anymore');
     }
@@ -87,6 +97,7 @@ export class AdminService {
 
           getAll.map(async (user) => {
             const { token } = await this.createTokenAndSendEmail(
+              Role.STUDENT,
               { email: user.email, id: user._id.toString() },
               process.env.REGISTER_TOKEN_USER,
             );
@@ -153,7 +164,6 @@ export class AdminService {
   }
 
   //
-
   //HR form
   async addHumanResource(obj: HrDto, res: Response) {
     try {
@@ -168,6 +178,7 @@ export class AdminService {
       const data = await newHr.save();
 
       const { token } = await this.createTokenAndSendEmail(
+        Role.HR,
         { email: newHr.email, id: newHr._id.toString() },
         process.env.REGISTER_TOKEN_USER,
       );
