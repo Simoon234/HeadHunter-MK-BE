@@ -25,6 +25,7 @@ export class AdminController {
     return this.adminService.addHumanResource(obj, res);
   }
 
+  @Roles(Role.ADMIN)
   @HttpCode(201)
   @Post("/upload")
   uploadUsers(@Body() file: AddUsersDto[], @Res() res: Response) {
@@ -37,5 +38,4 @@ export class AdminController {
   register(@Body('email') email: string, @Body('password') password: string) {
     return this.adminService.register(email, password);
   }
-
 }

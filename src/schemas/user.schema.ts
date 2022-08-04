@@ -8,6 +8,7 @@ export type UserDocument = User & Document;
 export class User {
   @Prop({
     type: String,
+    default: null
   })
   email: string;
 

@@ -67,38 +67,53 @@ export class AdminService {
   }
 
   async upload(file: AddUsersDto[], res: Response) {
+    let errorMessage = null;
     try {
-      return file.map(async (obj) => {
-        if (!obj.email.includes("@")) {
-          return res.json({
-            message: `Sorry, we only accept valid email addresses.(missing '@')`
-          });
-        }
-        const getAllUsers = await this.userModel
-          .find({ email: obj.email })
-          .exec();
+      file.map(async (obj) => {
+        const { email } = obj;
 
-        if (!getAllUsers) {
-          return res.json({
-            message: "Dude the same emails added"
-          });
-        }
-        const user = new this.userModel(file);
-        await user.save();
-        getAllUsers.map(async (user) => {
-          const { token } = await this.createTokenAndSendEmail(
-            { email: user.email, id: user.id.toString() },
-            process.env.REGISTER_TOKEN_USER
+        if (!email.includes("@")) {
+          errorMessage = "Email address is not valid";
+          throw new HttpException(
+            `Email address is not correct. ${email}`,
+            HttpStatus.BAD_REQUEST
           );
-          user.registerToken = token;
-          await user.save();
-        });
+        }
 
-        res.json({
-          users: file.map((item) => AdminService.filterMethod(item)),
-          status: "Success"
-        });
+        const getAllUsers = await this.userModel.find({ email }).exec();
+
+        if (getAllUsers.length === 0) {
+          const newUser = new this.userModel(obj);
+          await newUser.save();
+
+          const getAll = await this.userModel
+            .find({ email: newUser.email })
+            .exec();
+
+          getAll.map(async (user) => {
+            const { token } = await this.createTokenAndSendEmail(
+              { email: user.email, id: user._id.toString() },
+              process.env.REGISTER_TOKEN_USER
+            );
+
+            user.registerToken = token;
+            await user.save();
+          });
+        } else {
+          errorMessage = "Duplicates.";
+        }
       });
+
+      if (errorMessage === null) {
+        res.json({
+          message: errorMessage
+        });
+      } else {
+        res.json({
+          message: "OK",
+          errorMessage
+        });
+      }
     } catch ({ code, message, result }) {
       if (code === 11000) {
         res.json({
@@ -106,11 +121,9 @@ export class AdminService {
           message,
           code
         });
-
         console.error(message);
       }
     }
-
   }
 
   async changePassword(

@@ -84,6 +84,7 @@ export enum Role {
 }
 
 export interface AddStudentInterface {
+  id: string;
   email: string;
   courseCompletion: number;
   courseEngagement: number;
