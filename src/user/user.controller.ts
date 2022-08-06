@@ -1,29 +1,20 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Inject,
-  Param,
-  Patch,
-  Query,
-  Res,
-  UseGuards,
-} from '@nestjs/common';
-import { UserService } from './user.service';
-import { UserUpdateDto } from './dto/user.update.dto';
-import { UserFilterInterface } from '../types';
-import { Response } from 'express';
-import { JwtAuthGuard } from '../auth/guards/jwt.guard';
+import {Body, Controller, Get, Inject, Param, Patch, Query, Res, UseGuards,} from '@nestjs/common';
+import {UserService} from './user.service';
+import {UserFilterInterface} from '../types';
+import {Response} from 'express';
+import {UserUpdateDto} from './dto/user.update.dto';
+import {JwtAuthGuard} from "../auth/guards/jwt.guard";
 
 @Controller('/user')
 export class UserController {
-  constructor(@Inject(UserService) private userService: UserService) {}
+  constructor(@Inject(UserService) private userService: UserService) {
+  }
 
   @UseGuards(JwtAuthGuard)
   @Get('/all/active/:itemsOnPage/:page')
   getAllActiveUsers(
-    @Param('itemsOnPage') itemsOnPage: number,
-    @Param('page') page: number,
+      @Param('itemsOnPage') itemsOnPage: number,
+      @Param('page') page: number,
   ) {
     return this.userService.getAllActiveUsers(itemsOnPage, page);
   }
