@@ -12,6 +12,8 @@ import { HumanResources } from 'src/schemas/hr.schema';
 import { EmailService } from '../email/email.service';
 import { Role } from '../types';
 import { Admin } from '../schemas/admin.schema';
+import { resetPassword } from '../templates/email/passwordReset';
+import {log} from "util";
 
 @Injectable()
 export class AuthService {
@@ -202,6 +204,8 @@ export class AuthService {
   async remindPassword(email: string) {
     const user = await this.user.findOne({ email });
 
+    console.log(user);
+
     if (!user) {
       throw new HttpException('No user found', HttpStatus.NOT_FOUND);
     }
@@ -224,8 +228,13 @@ export class AuthService {
 
     await this.mailService.sendEmail(
       user.email,
-      'Password reset',
-      `<p>Click <a href="ERROR">here</a> to reset your password</p>`,
+      process.env.ADMIN_EMAIL,
+      '[NO-REPLY] Password reset',
+      resetPassword(
+        user.firstName === null ? '' : user.firstName,
+        user._id.toString(),
+        user.refreshToken,
+      ),
     );
 
     return {
@@ -247,5 +256,28 @@ export class AuthService {
     obj.refreshToken = refreshToken;
     await obj.save();
     return token;
+  }
+
+  async changePassword(id: string, refreshToken: string, password: string) {
+    const users = await this.user.find({ _id: id }).exec();
+    const hr = await this.hr.find({ _id: id }).exec();
+    const admins = await this.admin.find({ _id: id }).exec();
+
+    const [user] = [...users, ...hr, ...admins];
+
+
+    if(!user) {
+      throw new HttpException('User not exist', HttpStatus.BAD_REQUEST);
+    }
+
+    user.password = await hashPassword(password);
+    user.refreshToken = null;
+    user.accessToken = null;
+    await user.save();
+
+    return {
+      success: true,
+      message: 'Password changed.',
+    };
   }
 }

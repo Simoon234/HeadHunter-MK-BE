@@ -57,7 +57,16 @@ export class AuthController {
   }
 
   @Post('/reset-password')
-  resetPassword(@Body() email: string) {
+  resetPassword(@Body('email') email: string) {
     return this.authService.remindPassword(email);
+  }
+
+  @Post('/test/:id/:refreshToken')
+  test(
+    @Param('id') id: string,
+    @Param('refreshToken') refreshToken: string,
+    @Body('password') password: string,
+  ) {
+    return this.authService.changePassword(id, refreshToken, password);
   }
 }
