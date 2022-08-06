@@ -14,6 +14,7 @@ import { UpdateAdmin } from './dto/update-admin.dto';
 import { AddUsersDto } from './dto/add-users.dto';
 import { ObjectId } from 'mongodb';
 import { ACTIVATION_HR_URL, ACTIVATION_STUDENT_URL } from '../../config';
+import {registerHr, registerUser} from '../templates/email/registration';
 
 @Injectable()
 export class AdminService {
@@ -46,7 +47,7 @@ export class AdminService {
 
   async createTokenAndSendEmail(role: Role, payload: Payload, secret: string) {
     const token = sign({ email: payload.email, id: payload.id }, secret, {
-      expiresIn: '24h',
+      expiresIn: '7d',
     });
 
     const checkTokenValid = verify(token, secret);
@@ -54,19 +55,25 @@ export class AdminService {
       if (role === Role.HR) {
         await this.emailService.sendEmail(
           payload.email,
+          process.env.ADMIN_EMAIL,
           '[Register] MegaK HeadHunters',
-          `Click link to register - ${ACTIVATION_HR_URL}/${payload.id}`,
+          registerHr(payload.id, token),
         );
       }
       if (role === Role.STUDENT) {
         await this.emailService.sendEmail(
           payload.email,
+          process.env.ADMIN_EMAIL,
           '[Register] MegaK HeadHunters',
-          `Click link to register - ${ACTIVATION_STUDENT_URL}/${payload.id}`,
+          registerUser(payload.id, token),
         );
       }
     } else {
-      throw new Error('Token is not valid anymore');
+      throw new HttpException(
+        'You had 7 days for registration. Token expired. Please contact - ' +
+          process.env.ADMIN,
+        HttpStatus.FORBIDDEN,
+      );
     }
 
     return {
@@ -96,9 +103,15 @@ export class AdminService {
             .exec();
 
           getAll.map(async (user) => {
+
+            console.log(user)
+
             const { token } = await this.createTokenAndSendEmail(
               Role.STUDENT,
-              { email: user.email, id: user._id.toString() },
+              {
+                email: user.email,
+                id: user._id.toString(),
+              },
               process.env.REGISTER_TOKEN_USER,
             );
 
@@ -179,7 +192,10 @@ export class AdminService {
 
       const { token } = await this.createTokenAndSendEmail(
         Role.HR,
-        { email: newHr.email, id: newHr._id.toString() },
+        {
+          email: newHr.email,
+          id: newHr._id.toString(),
+        },
         process.env.REGISTER_TOKEN_USER,
       );
 
@@ -202,6 +218,7 @@ export class AdminService {
       console.error(e.message);
     }
   }
+
   // first Registration
   async register(email: string, password: string) {
     const hashPwd = await hashPassword(password);
