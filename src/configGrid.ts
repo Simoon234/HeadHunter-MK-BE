@@ -1,4 +1,4 @@
-import {mailConfig} from './config/mailConfig';
+import {mailConfig} from '../config/mailConfig';
 
 export const config = {
   transport: {
