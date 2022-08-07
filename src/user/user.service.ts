@@ -1,20 +1,23 @@
-import {HttpException, HttpStatus, Inject, Injectable} from '@nestjs/common';
-import {InjectModel} from '@nestjs/mongoose';
-import {Model} from 'mongoose';
-import {Status, SuccessfullyUpdatedUsersInterfaces, UserFilterInterface,} from '../types';
-import {UserUpdateDto} from './dto/user.update.dto';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import {
+  Status,
+  SuccessfullyUpdatedUsersInterfaces,
+  UserFilterInterface,
+} from '../types';
+import { UserUpdateDto } from './dto/user.update.dto';
 import fetch from 'node-fetch';
-import {Response} from 'express';
-import {User} from '../schemas/user.schema';
-import {EmailService} from '../email/email.service';
+import { Response } from 'express';
+import { User } from '../schemas/user.schema';
+import { EmailService } from '../email/email.service';
 
 @Injectable()
 export class UserService {
   constructor(
-      @InjectModel(User.name) private userModel: Model<User>,
-      @Inject(EmailService) private emailService: EmailService,
-  ) {
-  }
+    @InjectModel(User.name) private userModel: Model<User>,
+    @Inject(EmailService) private emailService: EmailService,
+  ) {}
 
   //PAGINATION
   async getAllActiveUsers(itemsOnPage: number, page: number) {
@@ -68,10 +71,10 @@ export class UserService {
       }
 
       await this.emailService.sendEmail(
-          process.env.ADMIN,
-          user.email,
-          'YEAAHH 🔥🔥🔥',
-          `User with ${id} got job!`,
+        process.env.ADMIN,
+        user.email,
+        'YEAAHH 🔥🔥🔥',
+        `User with ${id} got job!`,
       );
 
       res.json({

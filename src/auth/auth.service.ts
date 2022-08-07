@@ -13,7 +13,7 @@ import { EmailService } from '../email/email.service';
 import { Role } from '../types';
 import { Admin } from '../schemas/admin.schema';
 import { resetPassword } from '../templates/email/passwordReset';
-import {log} from "util";
+import { log } from 'util';
 
 @Injectable()
 export class AuthService {
@@ -102,9 +102,7 @@ export class AuthService {
   ) {
     try {
       if (obj.password !== obj.passwordRepeat) {
-        res.json({
-          message: 'Passwords are not the same',
-        });
+        throw new Error('Password is not the same');
       }
 
       const hashPwd = await hashPassword(obj.password);
@@ -116,9 +114,7 @@ export class AuthService {
 
       const get = await this.hr.findById({ _id: id });
       if (get.registerToken === null && get.active === true) {
-        res.json({
-          message: 'You are already registered',
-        });
+        throw new Error('You already registered');
       }
 
       return res.json({
@@ -127,6 +123,7 @@ export class AuthService {
       });
     } catch (err) {
       res.json({
+        success: false,
         message: err.message,
       });
       console.error(err);
@@ -141,9 +138,7 @@ export class AuthService {
   ) {
     try {
       if (obj.password !== obj.passwordRepeat) {
-        res.json({
-          message: 'Passwords are not the same',
-        });
+        throw new Error('Password is not the same');
       }
 
       const hashPwd = await hashPassword(obj.password);
@@ -156,17 +151,16 @@ export class AuthService {
       const get = await this.user.findById({ _id: id });
 
       if (get.registerToken === null && get.active === true) {
-        res.json({
-          message: 'You are already registered',
-        });
-      } else {
-        res.json({
-          registeredId: get._id,
-          success: true,
-        });
+        throw new Error('You already registered');
       }
+
+      res.json({
+        registeredId: get._id,
+        success: true,
+      });
     } catch (err) {
       res.json({
+        success: false,
         message: err.message,
       });
       console.error(err);
@@ -265,8 +259,7 @@ export class AuthService {
 
     const [user] = [...users, ...hr, ...admins];
 
-
-    if(!user) {
+    if (!user) {
       throw new HttpException('User not exist', HttpStatus.BAD_REQUEST);
     }
 

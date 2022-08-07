@@ -13,8 +13,7 @@ import { Admin, AdminDocument } from '../schemas/admin.schema';
 import { UpdateAdmin } from './dto/update-admin.dto';
 import { AddUsersDto } from './dto/add-users.dto';
 import { ObjectId } from 'mongodb';
-import { ACTIVATION_HR_URL, ACTIVATION_STUDENT_URL } from '../../config';
-import {registerHr, registerUser} from '../templates/email/registration';
+import { registerHr, registerUser } from '../templates/email/registration';
 
 @Injectable()
 export class AdminService {
@@ -103,8 +102,7 @@ export class AdminService {
             .exec();
 
           getAll.map(async (user) => {
-
-            console.log(user)
+            console.log(user);
 
             const { token } = await this.createTokenAndSendEmail(
               Role.STUDENT,

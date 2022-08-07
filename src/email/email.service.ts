@@ -1,6 +1,5 @@
-import {MailerService} from '@nestjs-modules/mailer';
-import {Inject, Injectable} from '@nestjs/common';
-
+import { MailerService } from '@nestjs-modules/mailer';
+import { Inject, Injectable } from '@nestjs/common';
 
 interface SentMessageInfo {
   to: string;
@@ -15,10 +14,10 @@ export class EmailService {
   ) {}
 
   async sendEmail(
-      to: string,
-      from: string,
-      subject: string,
-      html: string,
+    to: string,
+    from: string,
+    subject: string,
+    html: string,
   ): Promise<SentMessageInfo> {
     return this.mailerService.sendMail({
       to,

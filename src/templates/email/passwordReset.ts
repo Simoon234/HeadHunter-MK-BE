@@ -1,7 +1,7 @@
 export const resetPassword = (
-    name: string,
-    id: string,
-    refreshToken: string,
+  name: string,
+  id: string,
+  refreshToken: string,
 ) => {
   return `
         <h1>Hi ${name}</h1>

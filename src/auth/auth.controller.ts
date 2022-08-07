@@ -40,7 +40,7 @@ export class AuthController {
     return this.authService.registerHr(id, registerToken, obj, res);
   }
 
-  @Post('/register-user/:id/:registerToken')
+  @Post('/register-student/:id/:registerToken')
   registerUser(
     @Param('id') id: string,
     @Param('token') registerToken: string,
