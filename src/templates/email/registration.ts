@@ -1,4 +1,4 @@
-import {ACTIVATION_HR_URL, ACTIVATION_STUDENT_URL} from '../../../config';
+import { ACTIVATION_HR_URL, ACTIVATION_STUDENT_URL } from '../../../config';
 
 const message = (link: string, id: string, token: string) => `
     <h2> Hi there! </h2>
@@ -14,7 +14,7 @@ const message = (link: string, id: string, token: string) => `
 `;
 
 export const registerUser = (id: string, token: string) =>
-    message(ACTIVATION_HR_URL, id, token);
+  message(ACTIVATION_STUDENT_URL, id, token);
 
 export const registerHr = (id: string, token: string) =>
-    message(ACTIVATION_STUDENT_URL, id, token);
+  message(ACTIVATION_HR_URL, id, token);
