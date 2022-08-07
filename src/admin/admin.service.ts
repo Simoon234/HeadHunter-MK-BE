@@ -84,40 +84,45 @@ export class AdminService {
 
   async upload(file: AddUsersDto[], res: Response) {
     try {
-      file.map(async (obj) => {
-        const { email } = obj;
+      const getAllUsers = await this.userModel.find({}).exec();
+      const newUsers = [];
 
-        if (!email.includes('@')) {
+      file.map((obj) => {
+        const { email } = obj;
+        if (!email) {
           return;
         }
 
-        const getAllUsers = await this.userModel.find({ email }).exec();
-
-        if (getAllUsers.length === 0) {
-          const newUser = new this.userModel(obj);
-          await newUser.save();
-
-          const getAll = await this.userModel
-            .find({ email: newUser.email })
-            .exec();
-
-          getAll.map(async (user) => {
-            console.log(user);
-
-            const { token } = await this.createTokenAndSendEmail(
-              Role.STUDENT,
-              {
-                email: user.email,
-                id: user._id.toString(),
-              },
-              process.env.REGISTER_TOKEN_USER,
-            );
-
-            user.registerToken = token;
-            await user.save();
-          });
+        if (
+          !email.includes('@') ||
+          !!newUsers.find((user) => user.email === email)
+        ) {
+          return;
         }
+
+        newUsers.push(obj);
       });
+
+      newUsers.map(async (newUser) => {
+        if (!!getAllUsers.find((user) => user.email === newUser.email)) {
+          return;
+        }
+
+        const user = new this.userModel(newUser);
+        await user.save();
+
+        const { token } = await this.createTokenAndSendEmail(
+          Role.STUDENT,
+          {
+            email: user.email,
+            id: user._id.toString(),
+          },
+          process.env.REGISTER_TOKEN_USER,
+        );
+
+        user.registerToken = token;
+      });
+
       res.json({
         success: true,
       });

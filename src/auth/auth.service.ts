@@ -13,7 +13,6 @@ import { EmailService } from '../email/email.service';
 import { Role } from '../types';
 import { Admin } from '../schemas/admin.schema';
 import { resetPassword } from '../templates/email/passwordReset';
-import { log } from 'util';
 
 @Injectable()
 export class AuthService {
@@ -101,6 +100,11 @@ export class AuthService {
     res: Response,
   ) {
     try {
+      const get = await this.hr.findById({ _id: id });
+      if (get.registerToken === null && get.active === true) {
+        throw new Error('You already registered');
+      }
+
       if (obj.password !== obj.passwordRepeat) {
         throw new Error('Password is not the same');
       }
@@ -111,11 +115,6 @@ export class AuthService {
         { _id: id },
         { $set: { password: hashPwd, active: true, registerToken: null } },
       );
-
-      const get = await this.hr.findById({ _id: id });
-      if (get.registerToken === null && get.active === true) {
-        throw new Error('You already registered');
-      }
 
       return res.json({
         registeredId: get._id,
@@ -137,6 +136,11 @@ export class AuthService {
     res: Response,
   ) {
     try {
+      const get = await this.user.findById({ _id: id });
+      if (get.registerToken === null && get.active === true) {
+        throw new Error('You already registered');
+      }
+
       if (obj.password !== obj.passwordRepeat) {
         throw new Error('Password is not the same');
       }
@@ -147,12 +151,6 @@ export class AuthService {
         { _id: id },
         { $set: { password: hashPwd, active: true, registerToken: null } },
       );
-
-      const get = await this.user.findById({ _id: id });
-
-      if (get.registerToken === null && get.active === true) {
-        throw new Error('You already registered');
-      }
 
       res.json({
         registeredId: get._id,
