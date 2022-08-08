@@ -73,6 +73,8 @@ export class UserService {
         `User with ${id} got job!`,
       );
 
+      console.log('ss');
+
       res.json({
         updated: true,
         message: `User with ${id} got job.`,
