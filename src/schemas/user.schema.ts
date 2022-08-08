@@ -31,7 +31,7 @@ export class User {
     min: 0,
     max: 5,
   })
-  courseEngagment: number;
+  courseEngagement: number;
 
   @Prop({
     type: Number,
@@ -56,29 +56,29 @@ export class User {
     required: true,
     default: [],
   })
-  bonusProjectUrls: string[];
+  projectUrls: string[];
 
   @Prop({
-    type: Number,
-    default: null,
+    type: String,
+    default: '',
   })
   tel: number;
 
   @Prop({
     type: String,
-    default: null,
+    default: '',
   })
   firstName: string;
 
   @Prop({
     type: String,
-    default: null,
+    default: '',
   })
   lastName: string;
 
   @Prop({
     type: String,
-    default: null,
+    default: '',
   })
   githubUsername: string;
 
@@ -89,13 +89,8 @@ export class User {
   portfolioUrls: string[];
 
   @Prop({
-    default: [],
-    type: Array,
-  })
-  projectUrls: string[];
-
-  @Prop({
     type: String,
+    default: '',
   })
   bio: string;
 
@@ -108,7 +103,7 @@ export class User {
 
   @Prop({
     type: String,
-    default: null,
+    default: '',
   })
   targetWorkCity: string;
 
@@ -126,7 +121,7 @@ export class User {
   expectedSalary: number;
 
   @Prop({
-    type: Boolean,
+    type: Number,
     enum: Apprentice,
     default: Apprentice.NO,
   })
@@ -134,28 +129,31 @@ export class User {
 
   @Prop({
     type: Number,
-    default: null,
+    default: 0,
   })
   monthsOfCommercialExp: number;
 
   @Prop({
+    default: '',
     type: String,
   })
   education: string;
 
   @Prop({
+    default: '',
     type: String,
   })
   workExperience: string;
 
   @Prop({
+    default: '',
     type: String,
   })
   courses: string;
 
   @Prop({
     type: Boolean,
-    default: 0,
+    default: false,
   })
   active: boolean;
 
@@ -165,13 +163,6 @@ export class User {
     enum: Status,
   })
   status: Status;
-
-  @Prop({
-    type: String,
-    default:
-      'https://www.deviantart.com/karmaanddestiny/art/Default-user-icon-4-858661084',
-  })
-  avatarUrl: string;
 
   @Prop({
     type: String,
@@ -205,6 +196,18 @@ export class User {
     type: String,
   })
   addedByHr: string;
+
+  @Prop({
+    default: [],
+    type: Array,
+  })
+  scrumUrls: string[];
+
+  @Prop({
+    default: true,
+    type: Boolean,
+  })
+  firstLogin: boolean;
 }
 
 //api for user if exist.

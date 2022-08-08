@@ -68,6 +68,53 @@ export class AuthService {
       const id = String(user._id);
       const token = AuthService.createToken(await this.generateToken(user), id);
 
+      let resUser: any = {
+        id: user._id,
+        email: user.email,
+        role: user.role,
+      };
+
+      if (user.role === Role.ADMIN) {
+        resUser = { ...resUser };
+      }
+
+      if (user.role === Role.HR) {
+        resUser = {
+          ...resUser,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          company: user.company,
+        };
+      }
+
+      if (user.role === Role.STUDENT) {
+        resUser = {
+          ...resUser,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          tel: user.tel,
+          githubUsername: user.githubUsername,
+          bio: user.bio,
+          courseCompletion: user.courseCompletion,
+          courseEngagement: user.courseEngagement,
+          projectDegree: user.projectDegree,
+          teamProjectDegree: user.teamProjectDegree,
+          expectedTypeWork: user.expectedTypeWork,
+          expectedContractType: user.expectedContractType,
+          monthsOfCommercialExp: user.monthsOfCommercialExp,
+          targetWorkCity: user.targetWorkCity,
+          expectedSalary: user.expectedSalary,
+          canTakeApprenticeship: user.canTakeApprenticeship,
+          education: user.education,
+          courses: user.courses,
+          workExperience: user.workExperience,
+          portfolioUrls: user.portfolioUrls,
+          scrumUrls: user.scrumUrls,
+          projectUrls: user.projectUrls,
+          firstLogin: user.firstLogin,
+        };
+      }
+
       res
         .cookie('jwt', token.accessToken, {
           secure: false,
@@ -76,18 +123,7 @@ export class AuthService {
         })
         .json({
           success: true,
-          user: {
-            id: user._id,
-            email: user.email,
-            firstName:
-              user.role !== Role.HR
-                ? user.role !== Role.ADMIN
-                  ? user?.firstName
-                  : ''
-                : '',
-            lastName: user.role === Role.ADMIN ? '' : user?.lastName,
-            role: user.role,
-          },
+          user: resUser,
         });
     } catch (e) {
       res.json({ success: false, message: e.message });
@@ -167,7 +203,61 @@ export class AuthService {
 
   async checkAuth(person, res: Response) {
     try {
-      res.json({ success: true, role: person.role });
+      let user;
+      let resUser;
+      if (person.role === Role.ADMIN) {
+        user = await this.admin.findOne({ _id: person.id }).exec();
+        resUser = {
+          email: user[0].email,
+        };
+      }
+
+      if (person.role === Role.HR) {
+        user = await this.hr.find({ _id: person.id }).exec();
+        resUser = {
+          email: user[0].email,
+          firstName: user[0].firstName,
+          lastName: user[0].lastName,
+          tel: user[0].tel,
+          company: user[0].company,
+        };
+      }
+
+      if (person.role === Role.STUDENT) {
+        user = await this.user.find({ _id: person.id }).exec();
+        resUser = {
+          email: user[0].email,
+          firstName: user[0].firstName,
+          lastName: user[0].lastName,
+          tel: user[0].tel,
+          githubUsername: user[0].githubUsername,
+          bio: user[0].bio,
+          courseCompletion: user[0].courseCompletion,
+          courseEngagement: user[0].courseEngagement,
+          projectDegree: user[0].projectDegree,
+          teamProjectDegree: user[0].teamProjectDegree,
+          expectedTypeWork: user[0].expectedTypeWork,
+          expectedContractType: user[0].expectedContractType,
+          monthsOfCommercialExp: user[0].monthsOfCommercialExp,
+          targetWorkCity: user[0].targetWorkCity,
+          expectedSalary: user[0].expectedSalary,
+          canTakeApprenticeship: user[0].canTakeApprenticeship,
+          education: user[0].education,
+          courses: user[0].courses,
+          workExperience: user[0].workExperience,
+          portfolioUrls: user[0].portfolioUrls,
+          scrumUrls: user[0].scrumUrls,
+          projectUrls: user[0].projectUrls,
+          firstLogin: user[0].firstLogin,
+        };
+      }
+
+      res.json({
+        success: true,
+        role: person.role,
+        id: person.id,
+        user: resUser,
+      });
     } catch (e) {
       res.json({ success: false, message: e.message });
     }

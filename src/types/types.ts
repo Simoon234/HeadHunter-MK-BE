@@ -17,8 +17,8 @@ export enum ContractType {
 }
 
 export enum Apprentice {
-  YES = 'true',
-  NO = 'false',
+  YES,
+  NO,
 }
 
 export enum Status {
@@ -41,10 +41,10 @@ export interface ReturnedUsersValuesInterfaces {
   pages: number;
 }
 
-export interface SuccessfullyUpdatedUsersInterfaces {
-  success: boolean;
-  text: string;
-}
+// export interface SuccessfullyUpdatedUsersInterfaces {
+//   success: boolean;
+//   text: string;
+// }
 
 export interface UserFilterInterface {
   courseCompletion: number;
@@ -85,5 +85,5 @@ export interface AddStudentInterface {
   courseEngagement: number;
   projectDegree: number;
   teamProjectDegree: number;
-  bonusProjectUrls: string[];
+  projectUrls: string[];
 }

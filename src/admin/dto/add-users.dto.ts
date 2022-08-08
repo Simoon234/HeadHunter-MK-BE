@@ -10,7 +10,7 @@ export class AddUsersDto implements AddStudentInterface {
   email: string;
 
   @IsString()
-  bonusProjectUrls: string[];
+  projectUrls: string[];
 
   @IsNumber()
   courseCompletion: number;

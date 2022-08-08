@@ -39,8 +39,12 @@ export class UserController {
   }
 
   @Patch('/update/:id')
-  updateUser(@Param('id') id: string, @Body() user: UserUpdateDto) {
-    return this.userService.updateUserAfterLogin(id, user);
+  updateUser(
+    @Param('id') id: string,
+    @Res() res: Response,
+    @Body() user: UserUpdateDto,
+  ) {
+    return this.userService.updateUserAfterLogin(id, res, user);
   }
 
   @Get('/filter')

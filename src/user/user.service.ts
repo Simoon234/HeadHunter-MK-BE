@@ -1,16 +1,12 @@
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import {
-  Status,
-  SuccessfullyUpdatedUsersInterfaces,
-  UserFilterInterface,
-} from '../types';
+import { Status, UserFilterInterface } from '../types';
 import { UserUpdateDto } from './dto/user.update.dto';
-import fetch from 'node-fetch';
 import { Response } from 'express';
 import { User } from '../schemas/user.schema';
 import { EmailService } from '../email/email.service';
+import { hashPassword } from '../utils/hashPassword';
 
 @Injectable()
 export class UserService {
@@ -43,7 +39,7 @@ export class UserService {
         return {
           id: item._id,
           courseCompletion: item.courseCompletion,
-          courseEngagment: item.courseEngagment,
+          courseEngagement: item.courseEngagement,
           projectDegree: item.projectDegree,
           teamProjectDegree: item.teamProjectDegree,
           expectedTypeWork: item.expectedTypeWork,
@@ -95,6 +91,7 @@ export class UserService {
   //Update
   async updateUserAfterLogin(
     id: string,
+    res: Response,
     {
       bio,
       education,
@@ -102,9 +99,9 @@ export class UserService {
       expectedContractType,
       expectedSalary,
       expectedTypeWork,
-      firstname,
+      firstName,
       githubUsername,
-      lastname,
+      lastName,
       monthsOfCommercialExp,
       targetWorkCity,
       tel,
@@ -114,107 +111,91 @@ export class UserService {
       projectUrls,
       portfolioUrls,
       scrumUrls,
-      avatarUrl,
+      password,
+      passwordRepeat,
     }: UserUpdateDto,
-  ): Promise<SuccessfullyUpdatedUsersInterfaces> {
-    const findUser = await this.userModel.findOne({ _id: id });
-    const getAllUsers = await this.userModel.find().exec();
-
-    //CHECK IF EMAIL is already set in DB
-    for (const user of getAllUsers) {
-      if (user.email === email) {
-        throw new HttpException(
-          `User already exists with that email. (${email})`,
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-    }
-
-    if (githubUsername === '') {
-      avatarUrl =
-        'https://www.deviantart.com/karmaanddestiny/art/Default-user-icon-4-858661084';
-    } else {
-      //check GITHUB USERNAME
-      const res = await fetch(`https://api.github.com/users/${githubUsername}`);
-      if (res.status === 404) {
-        throw new HttpException(
-          `Github username not exist. Check again username: (${githubUsername})`,
-          HttpStatus.NOT_FOUND,
-        );
-      }
-      if (res.status === 200) {
-        avatarUrl = `https://github.com/${githubUsername}.png`;
-      }
-    }
-
-    //check values
-    if (email === '' || portfolioUrls.length === 0 || targetWorkCity === '') {
-      email = findUser.email;
-      portfolioUrls = [];
-      targetWorkCity = '';
-    }
-
-    if (tel === 0 || tel === null) {
-      tel = 0;
-    }
-
-    if (expectedSalary === null || expectedSalary === '') {
-      expectedSalary = 0;
-    }
-
-    if (monthsOfCommercialExp < 0) {
-      throw new HttpException(
-        'Not allowed to set negative values',
-        HttpStatus.BAD_REQUEST,
+  ) {
+    try {
+      const findUser = await this.userModel.findOne({ _id: id });
+      const getAllUsers = (await this.userModel.find().exec()).filter(
+        (user) => user.email !== findUser.email,
       );
-    }
+      let hashPwd = '';
 
-    if (!email.includes('@') || email.length <= 5) {
-      throw new HttpException(
-        `Email should contain @. Got (${email}), and have at least 5 characters.`,
-        HttpStatus.BAD_REQUEST,
+      for (const user of getAllUsers) {
+        if (user.email === email) {
+          throw new Error('Podany adres email istnieje w bazie danych');
+        }
+      }
+
+      if (password.length !== 0) {
+        if (password !== passwordRepeat) {
+          throw new Error('Hasła nie są takie same');
+        }
+        hashPwd = await hashPassword(password);
+      }
+
+      //UPDATE USER
+      const updatedUser = await this.userModel.findOneAndUpdate(
+        { _id: id },
+        {
+          $set: {
+            firstName,
+            lastName,
+            tel,
+            email,
+            githubUsername,
+            bio,
+            expectedTypeWork,
+            targetWorkCity,
+            expectedContractType,
+            expectedSalary,
+            monthsOfCommercialExp,
+            canTakeApprenticeship,
+            education,
+            courses,
+            workExperience,
+            portfolioUrls,
+            projectUrls,
+            scrumUrls,
+            firstLogin: false,
+            password: hashPwd.length !== 0 ? hashPwd : findUser.password,
+          },
+        },
       );
-    }
 
-    if (firstname === '' && lastname === '' && projectUrls.length === 0) {
-      throw new HttpException(
-        `${firstname} / ${lastname} / ${projectUrls} cannot be empty`,
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    //UPDATE USER
-    await this.userModel.findOneAndUpdate(
-      { _id: id },
-      {
-        $set: {
-          firstName: firstname,
-          lastName: lastname,
-          tel,
+      res.json({
+        success: true,
+        user: {
+          id,
+          firstName,
+          lastName,
           email,
+          tel,
           githubUsername,
           bio,
+          courseCompletion: updatedUser.courseCompletion,
+          courseEngagement: updatedUser.courseEngagement,
+          projectDegree: updatedUser.projectDegree,
+          teamProjectDegree: updatedUser.teamProjectDegree,
           expectedTypeWork,
-          targetWorkCity,
           expectedContractType,
-          expectedSalary,
           monthsOfCommercialExp,
+          targetWorkCity,
+          expectedSalary,
           canTakeApprenticeship,
           education,
           courses,
           workExperience,
           portfolioUrls,
-          projectUrls,
           scrumUrls,
-          avatarUrl,
+          projectUrls,
+          firstLogin: updatedUser.firstLogin,
         },
-      },
-    );
-
-    return {
-      text: `User with id (${id}) updated`,
-      success: true,
-    };
+      });
+    } catch (e) {
+      res.json({ success: false, message: e.message });
+    }
   }
 
   //AVATAR URL SCHEMA CREATE!
