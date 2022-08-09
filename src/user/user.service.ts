@@ -57,34 +57,38 @@ export class UserService {
   //TYLKO USER ROLA USER useGuard()
   async userFoundJob(id: string, res: Response) {
     try {
+      console.log(id);
       const user = await this.userModel.findOneAndUpdate(
         { _id: id },
-        { $set: { status: Status.HIRED, active: false } },
+        { $set: { status: Status.HIRED, active: false, accessToken: null } },
       );
 
       if (!user) {
-        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+        throw new Error('Nie znaleziono użytkownika');
       }
 
       await this.emailService.sendEmail(
-        process.env.ADMIN,
-        user.email,
-        'YEAAHH 🔥🔥🔥',
+        process.env.ADMIN_EMAIL,
+        process.env.ADMIN_EMAIL,
+        '[MegaK HeadHunters] Student find job',
         `User with ${id} got job!`,
       );
 
-      console.log('ss');
-
-      res.json({
-        updated: true,
-        message: `User with ${id} got job.`,
-      });
+      res
+        .clearCookie('jwt', {
+          secure: false,
+          domain: 'localhost',
+          httpOnly: true,
+        })
+        .json({
+          success: true,
+        });
     } catch (e) {
       if (e) {
         res.status(404);
         res.json({
-          message: 'User not found. Make sure you use valid id.',
-          status: false,
+          message: e.message,
+          success: false,
         });
       }
     }

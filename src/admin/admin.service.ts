@@ -55,7 +55,7 @@ export class AdminService {
         await this.emailService.sendEmail(
           payload.email,
           process.env.ADMIN_EMAIL,
-          '[Register] MegaK HeadHunters',
+          '[MegaK HeadHunters] Register',
           registerHr(payload.id, token),
         );
       }
@@ -63,14 +63,14 @@ export class AdminService {
         await this.emailService.sendEmail(
           payload.email,
           process.env.ADMIN_EMAIL,
-          '[Register] MegaK HeadHunters',
+          '[MegaK HeadHunters] Register',
           registerUser(payload.id, token),
         );
       }
     } else {
       throw new HttpException(
         'You had 7 days for registration. Token expired. Please contact - ' +
-          process.env.ADMIN,
+          process.env.ADMIN_EMAIL,
         HttpStatus.FORBIDDEN,
       );
     }

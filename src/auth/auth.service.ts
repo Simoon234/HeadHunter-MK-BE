@@ -49,20 +49,20 @@ export class AuthService {
     const { email, password } = req;
 
     try {
-      const users = await this.user.find({ email }).exec();
-      const hr = await this.hr.find({ email }).exec();
+      const users = await this.user.find({ email, active: true }).exec();
+      const hr = await this.hr.find({ email, active: true }).exec();
       const admins = await this.admin.find({ email }).exec();
 
       const [user] = [...users, ...hr, ...admins];
 
       if (!user) {
-        throw new Error('User not Found');
+        throw new Error('Nie znaleziono użytkownika o podanym adresie email');
       }
 
       const pwd = await verifyPassword(password, user.password);
 
       if (!pwd) {
-        throw new Error('Incorrect password');
+        throw new Error('Niepoprawne hasło');
       }
 
       const id = String(user._id);
@@ -206,7 +206,7 @@ export class AuthService {
       let user;
       let resUser;
       if (person.role === Role.ADMIN) {
-        user = await this.admin.findOne({ _id: person.id }).exec();
+        user = await this.admin.find({ _id: person.id }).exec();
         resUser = {
           email: user[0].email,
         };
@@ -226,6 +226,7 @@ export class AuthService {
       if (person.role === Role.STUDENT) {
         user = await this.user.find({ _id: person.id }).exec();
         resUser = {
+          id: user[0].id,
           email: user[0].email,
           firstName: user[0].firstName,
           lastName: user[0].lastName,
