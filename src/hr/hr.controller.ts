@@ -1,5 +1,7 @@
-import { Controller, Get, Inject, Param } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Param, Put, Res } from '@nestjs/common';
 import { HrService } from './hr.service';
+import { Response } from 'express';
+import { HrUpdateDto } from './dto/hr-update.dto';
 
 @Controller('/hr')
 export class HrController {
@@ -18,5 +20,10 @@ export class HrController {
   @Get('/addToTalk/:id')
   addToTalk(@Param('id') id: string) {
     return this.hr.addToTalk(id);
+  }
+
+  @Put('/update/:id')
+  update(@Param('id') id, @Body() obj: HrUpdateDto, @Res() res: Response) {
+    return this.hr.update(id, obj, res);
   }
 }

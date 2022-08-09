@@ -142,10 +142,7 @@ export class AdminService {
       let objToSave = {};
       if (obj.password) {
         if (obj.password !== obj.passwordRepeat) {
-          throw new HttpException(
-            'Password are not the same.',
-            HttpStatus.BAD_REQUEST,
-          );
+          throw new Error('Podane hasła nie są takie same');
         }
 
         const hashedPwd = await hashPassword(obj.password);

@@ -6,6 +6,11 @@ import { sign, TokenExpiredError, verify } from 'jsonwebtoken';
 import { User } from '../schemas/user.schema';
 import { Status } from '../types';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { UpdateAdmin } from '../admin/dto/update-admin.dto';
+import { Response } from 'express';
+import { hashPassword } from '../utils/hashPassword';
+import { ObjectId } from 'mongodb';
+import { HrUpdateDto } from './dto/hr-update.dto';
 
 @Injectable()
 export class HrService {
@@ -121,5 +126,43 @@ export class HrService {
     return {
       message: 'User has been removed from (Do rozmowy) column',
     };
+  }
+
+  async update(id: string, obj: HrUpdateDto, res: Response): Promise<void> {
+    try {
+      const findUser = await this.humanResources.findOne({ _id: id });
+      let hashPwd = '';
+
+      if (obj.password) {
+        if (obj.password !== obj.passwordRepeat) {
+          throw new Error('Hasła nie są takie same');
+        }
+        hashPwd = await hashPassword(obj.password);
+      }
+
+      findUser.firstName = obj.firstName;
+      findUser.lastName = obj.lastName;
+      findUser.email = obj.email;
+      findUser.company = obj.company;
+      findUser.password = hashPwd !== '' ? hashPwd : findUser.password;
+
+      await findUser.save();
+
+      res.json({
+        success: true,
+        user: {
+          id: id,
+          firstName: obj.firstName,
+          lastName: obj.lastName,
+          email: obj.email,
+          company: obj.company,
+        },
+      });
+    } catch (e) {
+      res.json({
+        success: false,
+        message: e.message,
+      });
+    }
   }
 }
