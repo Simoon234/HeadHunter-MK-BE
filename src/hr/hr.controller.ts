@@ -7,19 +7,32 @@ import { HrUpdateDto } from './dto/hr-update.dto';
 export class HrController {
   constructor(@Inject(HrService) private hr: HrService) {}
 
-  @Get('/interested')
-  getAllInterestedUsers() {
-    return this.hr.usersAddedToTalkByCurrentHr();
+  @Get('/interested/:id/:itemsOnPage/:page')
+  getAllInterestedUsers(
+    @Param('id') id: string,
+    @Param('itemsOnPage') itemsOnPage: number,
+    @Param('page') page: number,
+    @Res() res: Response,
+  ) {
+    return this.hr.usersAddedToTalkByCurrentHr(id, itemsOnPage, page, res);
   }
 
-  @Get('/not-interested/:id')
-  notInterested(@Param('id') id: string) {
-    return this.hr.notInterested(id);
+  @Get('/not-interested/:hrId/:userId')
+  notInterested(
+    @Param('hrId') hrId: string,
+    @Param('userId') userId: string,
+    @Res() res: Response,
+  ) {
+    return this.hr.notInterested(userId, hrId, res);
   }
 
-  @Get('/addToTalk/:id')
-  addToTalk(@Param('id') id: string) {
-    return this.hr.addToTalk(id);
+  @Get('/addToTalk/:id/:userId')
+  addToTalk(
+    @Param('id') id: string,
+    @Param('userId') userId: string,
+    @Res() res: Response,
+  ) {
+    return this.hr.addToTalk(id, userId, res);
   }
 
   @Put('/update/:id')

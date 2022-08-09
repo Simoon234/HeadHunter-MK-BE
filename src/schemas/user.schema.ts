@@ -208,6 +208,11 @@ export class User {
     type: Boolean,
   })
   firstLogin: boolean;
+
+  @Prop({
+    default: null,
+  })
+  dateAdded: Date | null;
 }
 
 //api for user if exist.

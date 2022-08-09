@@ -16,42 +16,67 @@ export class UserService {
   ) {}
 
   //PAGINATION
-  async getAllActiveUsers(itemsOnPage: number, page: number) {
-    const maxItemsOnPage = itemsOnPage;
-    const currentPage = page;
-    const countElement = await this.userModel.count({
-      status: Status.ACTIVE,
-      active: true,
-    });
-    const getAllActiveUsers = await this.userModel
-      .find({
+  async getAllActiveUsers(itemsOnPage: number, page: number, res: Response) {
+    try {
+      const maxItemsOnPage = itemsOnPage;
+      const currentPage = page;
+      const countElement = await this.userModel.count({
         status: Status.ACTIVE,
         active: true,
-      })
-      .skip(maxItemsOnPage * (currentPage - 1))
-      .limit(maxItemsOnPage)
-      .exec();
+        firstLogin: false,
+      });
+      const getAllActiveUsers = await this.userModel
+        .find({
+          status: Status.ACTIVE,
+          active: true,
+          firstLogin: false,
+        })
+        .skip(maxItemsOnPage * (currentPage - 1))
+        .limit(maxItemsOnPage)
+        .exec();
 
-    const totalPages = Math.round(countElement / maxItemsOnPage);
+      const totalPages = Math.round(countElement / maxItemsOnPage);
 
-    return {
-      users: getAllActiveUsers.map((item) => {
+      const usersRes = getAllActiveUsers.map((item) => {
         return {
-          id: item._id,
+          id: item.id,
+          email: item.email,
+          firstName: item.firstName,
+          lastName: item.lastName,
+          tel: item.tel,
+          githubUsername: item.githubUsername,
+          bio: item.bio,
           courseCompletion: item.courseCompletion,
           courseEngagement: item.courseEngagement,
           projectDegree: item.projectDegree,
           teamProjectDegree: item.teamProjectDegree,
           expectedTypeWork: item.expectedTypeWork,
           expectedContractType: item.expectedContractType,
-          expectedSalary: item.expectedSalary,
-          canTakeApprenticeship: item.canTakeApprenticeship,
           monthsOfCommercialExp: item.monthsOfCommercialExp,
           targetWorkCity: item.targetWorkCity,
+          expectedSalary: item.expectedSalary,
+          canTakeApprenticeship: item.canTakeApprenticeship,
+          education: item.education,
+          courses: item.courses,
+          workExperience: item.workExperience,
+          portfolioUrls: item.portfolioUrls,
+          scrumUrls: item.scrumUrls,
+          projectUrls: item.projectUrls,
+          firstLogin: item.firstLogin,
         };
-      }),
-      pages: totalPages,
-    };
+      });
+
+      res.json({
+        success: true,
+        users: usersRes,
+        pages: totalPages,
+      });
+    } catch (e) {
+      res.json({
+        success: false,
+        message: e.message,
+      });
+    }
   }
 
   //TYLKO USER ROLA USER useGuard()

@@ -24,8 +24,9 @@ export class UserController {
   getAllActiveUsers(
     @Param('itemsOnPage') itemsOnPage: number,
     @Param('page') page: number,
+    @Res() res: Response,
   ) {
-    return this.userService.getAllActiveUsers(itemsOnPage, page);
+    return this.userService.getAllActiveUsers(itemsOnPage, page, res);
   }
 
   @Get('/details/:id')
