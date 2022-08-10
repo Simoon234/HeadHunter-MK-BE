@@ -213,6 +213,12 @@ export class User {
     default: null,
   })
   dateAdded: Date | null;
+
+  @Prop({
+    default: [],
+    type: Array,
+  })
+  bonusProjectUrls: string[];
 }
 
 //api for user if exist.

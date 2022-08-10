@@ -3,14 +3,11 @@ import { AddStudentInterface } from '../../types';
 
 export class AddUsersDto implements AddStudentInterface {
   @IsString()
-  id: string;
-
-  @IsString()
   @IsNotEmpty()
   email: string;
 
   @IsString()
-  projectUrls: string[];
+  bonusProjectUrls: string[];
 
   @IsNumber()
   courseCompletion: number;

@@ -108,6 +108,19 @@ export class AdminService {
           return;
         }
 
+        if (newUser.courseCompletion < 0 || newUser.courseCompletion > 5) {
+          newUser.courseCompletion = 0;
+        }
+        if (newUser.courseEngagement < 0 || newUser.courseEngagement > 5) {
+          newUser.courseEngagement = 0;
+        }
+        if (newUser.projectDegree < 0 || newUser.projectDegree > 5) {
+          newUser.projectDegree = 0;
+        }
+        if (newUser.teamProjectDegree < 0 || newUser.teamProjectDegree > 5) {
+          newUser.teamProjectDegree = 0;
+        }
+
         const user = new this.userModel(newUser);
         await user.save();
 

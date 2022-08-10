@@ -79,11 +79,10 @@ export enum Role {
 }
 
 export interface AddStudentInterface {
-  id: string;
   email: string;
   courseCompletion: number;
   courseEngagement: number;
   projectDegree: number;
   teamProjectDegree: number;
-  projectUrls: string[];
+  bonusProjectUrls: string[];
 }
