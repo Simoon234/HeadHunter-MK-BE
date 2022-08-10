@@ -331,6 +331,11 @@ export class HrService {
         throw new Error('Nie znaleziono użytkownika');
       }
 
+      const allHr = await this.humanResources.find({});
+      allHr.map(async (item) => {
+        item.users = item.users.filter((userId) => userId.toString() !== id);
+        await item.save();
+      })
 
       await this.emailService.sendEmail(
         process.env.ADMIN_EMAIL,
