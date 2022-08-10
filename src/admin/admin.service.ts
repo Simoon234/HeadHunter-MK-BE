@@ -122,7 +122,6 @@ export class AdminService {
         }
 
         const user = new this.userModel(newUser);
-        await user.save();
 
         const { token } = await this.createTokenAndSendEmail(
           Role.STUDENT,
@@ -134,6 +133,8 @@ export class AdminService {
         );
 
         user.registerToken = token;
+
+        await user.save();
       });
 
       res.json({

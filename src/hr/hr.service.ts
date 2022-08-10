@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { HumanResources } from '../schemas/hr.schema';
@@ -6,12 +6,10 @@ import { sign, TokenExpiredError, verify } from 'jsonwebtoken';
 import { User } from '../schemas/user.schema';
 import { Status } from '../types';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { UpdateAdmin } from '../admin/dto/update-admin.dto';
 import { Response } from 'express';
 import { hashPassword } from '../utils/hashPassword';
-import { ObjectId } from 'mongodb';
 import { HrUpdateDto } from './dto/hr-update.dto';
-import { log } from 'util';
+import { ObjectId } from 'mongodb';
 
 @Injectable()
 export class HrService {
@@ -21,8 +19,104 @@ export class HrService {
     @InjectModel(User.name) private user: Model<User>,
   ) {}
 
+  async getAllActiveUsers(
+    id: string,
+    itemsOnPage: number,
+    page: number,
+    res: Response,
+  ) {
+    try {
+      const hr = await this.humanResources.findOne({ _id: id });
+      const hrStudentsId = hr.users.map((item) => item.toString());
+
+      const maxItemsOnPage = itemsOnPage;
+      const currentPage = page;
+
+      const getAllActiveStudents = await this.user
+        .find({
+          status: Status.ACTIVE,
+          active: true,
+          firstLogin: false,
+        })
+        .exec();
+
+      const countElement = getAllActiveStudents.length;
+
+      const activeStudentsId = getAllActiveStudents
+        .filter((student) => !hrStudentsId.includes(student._id.toString()))
+        .map((el) => el._id.toString());
+
+      const getPaginationStudents = await this.user
+        .find({
+          $and: [
+            { status: Status.ACTIVE, active: true, firstLogin: false },
+            {
+              _id: { $in: activeStudentsId },
+            },
+          ],
+        })
+        .skip(maxItemsOnPage * (currentPage - 1))
+        .limit(maxItemsOnPage)
+        .exec();
+
+      const totalPages = Math.round(
+        (countElement - hr.users.length) / maxItemsOnPage,
+      );
+
+      const usersRes = getPaginationStudents.map((item) => {
+        return {
+          id: item.id,
+          email: item.email,
+          firstName: item.firstName,
+          lastName: item.lastName,
+          tel: item.tel,
+          githubUsername: item.githubUsername,
+          bio: item.bio,
+          courseCompletion: item.courseCompletion,
+          courseEngagement: item.courseEngagement,
+          projectDegree: item.projectDegree,
+          teamProjectDegree: item.teamProjectDegree,
+          expectedTypeWork: item.expectedTypeWork,
+          expectedContractType: item.expectedContractType,
+          monthsOfCommercialExp: item.monthsOfCommercialExp,
+          targetWorkCity: item.targetWorkCity,
+          expectedSalary: item.expectedSalary,
+          canTakeApprenticeship: item.canTakeApprenticeship,
+          education: item.education,
+          courses: item.courses,
+          workExperience: item.workExperience,
+          portfolioUrls: item.portfolioUrls,
+          scrumUrls: item.scrumUrls,
+          projectUrls: item.projectUrls,
+          firstLogin: item.firstLogin,
+        };
+      });
+
+      res.json({
+        success: true,
+        users: usersRes,
+        pages: totalPages,
+      });
+    } catch (e) {
+      res.json({
+        success: false,
+        message: e.message,
+      });
+    }
+  }
+
   async addToTalk(id: string, userId: string, res: Response) {
     try {
+      const hr = await this.humanResources.findById({
+        _id: id,
+      });
+
+      if (hr.maxStudents <= hr.users.length) {
+        throw new Error(
+          `Przekroczyłeś maksymalną liczbę kursantów (${hr.maxStudents}), których możesz dodać do rozmowy`,
+        );
+      }
+
       const addUserToTalk = await this.user.findOne({ _id: userId });
 
       if (
@@ -44,15 +138,11 @@ export class HrService {
         {
           $set: {
             addedByHr: token,
-            status: Status.CALL,
+            // status: Status.CALL,
             dateAdded: new Date(),
           },
         },
       );
-
-      const hr = await this.humanResources.findById({
-        _id: id,
-      });
 
       hr.users.map((item) => {
         if (item.toString() === userId) {
@@ -157,7 +247,6 @@ export class HrService {
     verify(token, env, async (err) => {
       if (err instanceof TokenExpiredError) {
         item.addedByHr = null;
-        item.status = Status.ACTIVE;
         item.dateAdded = null;
         await item.save();
 
@@ -179,7 +268,7 @@ export class HrService {
     try {
       await this.user.findOneAndUpdate(
         { _id: userId },
-        { $set: { addedByHr: null, status: Status.ACTIVE, dateAdded: null } },
+        { $set: { addedByHr: null, dateAdded: null } },
       );
 
       const hr = await this.humanResources.findById({

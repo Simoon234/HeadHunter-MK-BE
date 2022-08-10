@@ -19,16 +19,6 @@ import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 export class UserController {
   constructor(@Inject(UserService) private userService: UserService) {}
 
-  @UseGuards(JwtAuthGuard)
-  @Get('/all/active/:itemsOnPage/:page')
-  getAllActiveUsers(
-    @Param('itemsOnPage') itemsOnPage: number,
-    @Param('page') page: number,
-    @Res() res: Response,
-  ) {
-    return this.userService.getAllActiveUsers(itemsOnPage, page, res);
-  }
-
   @Get('/details/:id')
   getSingleUserCV(@Param('id') id: string, @Res() res: any) {
     return this.userService.getSingleUserCV(id, res);

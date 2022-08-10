@@ -1,7 +1,17 @@
-import { Body, Controller, Get, Inject, Param, Put, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Inject,
+  Param,
+  Put,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { HrService } from './hr.service';
 import { Response } from 'express';
 import { HrUpdateDto } from './dto/hr-update.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 
 @Controller('/hr')
 export class HrController {
@@ -38,5 +48,16 @@ export class HrController {
   @Put('/update/:id')
   update(@Param('id') id, @Body() obj: HrUpdateDto, @Res() res: Response) {
     return this.hr.update(id, obj, res);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('/all/active/:id/:itemsOnPage/:page')
+  getAllActiveUsers(
+    @Param('itemsOnPage') itemsOnPage: number,
+    @Param('page') page: number,
+    @Param('id') id: string,
+    @Res() res: Response,
+  ) {
+    return this.hr.getAllActiveUsers(id, itemsOnPage, page, res);
   }
 }
