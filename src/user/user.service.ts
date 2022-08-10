@@ -84,6 +84,7 @@ export class UserService {
   //TYLKO USER ROLA USER useGuard()
   async userFoundJob(id: string, res: Response) {
     try {
+      let a = [];
       const user = await this.userModel.findOneAndUpdate(
         { _id: id },
         { $set: { status: Status.HIRED, active: false, accessToken: null } },
@@ -91,10 +92,9 @@ export class UserService {
 
       const allHr = await this.hrModule.find({});
       allHr.map(async (item) => {
-        let users = item.users;
-        users = [...users].filter((userId) => userId.toString() !== id);
+        item.users = item.users.filter((userId) => userId.toString() !== id);
         await item.save();
-        return users;
+        return a;
       })
 
       if (!user) {

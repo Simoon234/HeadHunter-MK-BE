@@ -331,6 +331,7 @@ export class HrService {
         throw new Error('Nie znaleziono użytkownika');
       }
 
+
       await this.emailService.sendEmail(
         process.env.ADMIN_EMAIL,
         process.env.ADMIN_EMAIL,
