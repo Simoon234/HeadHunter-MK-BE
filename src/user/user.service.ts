@@ -92,11 +92,10 @@ export class UserService {
       const allHr = await this.hrModule.find({});
       allHr.map(async (item) => {
         let users = item.users;
-        users = users.filter((userId) => userId.toString() !== id);
+        users = [...users].filter((userId) => userId.toString() !== id);
         await item.save();
         return users;
       })
-
 
       if (!user) {
         throw new Error('Nie znaleziono użytkownika');
