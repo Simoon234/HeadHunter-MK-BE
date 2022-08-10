@@ -7,13 +7,79 @@ import { Response } from 'express';
 import { User } from '../schemas/user.schema';
 import { EmailService } from '../email/email.service';
 import { hashPassword } from '../utils/hashPassword';
+import {HumanResources} from "../schemas/hr.schema";
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
+    @InjectModel(HumanResources.name) private hrModule: Model<HumanResources>,
     @Inject(EmailService) private emailService: EmailService,
   ) {}
+
+  //PAGINATION
+  async getAllActiveUsers(itemsOnPage: number, page: number, res: Response) {
+    try {
+      const maxItemsOnPage = itemsOnPage;
+      const currentPage = page;
+      const countElement = await this.userModel.count({
+        status: Status.ACTIVE,
+        active: true,
+        firstLogin: false,
+      });
+      const getAllActiveUsers = await this.userModel
+        .find({
+          status: Status.ACTIVE,
+          active: true,
+          firstLogin: false,
+        })
+        .skip(maxItemsOnPage * (currentPage - 1))
+        .limit(maxItemsOnPage)
+        .exec();
+
+      const totalPages = Math.round(countElement / maxItemsOnPage);
+
+      const usersRes = getAllActiveUsers.map((item) => {
+        return {
+          id: item.id,
+          email: item.email,
+          firstName: item.firstName,
+          lastName: item.lastName,
+          tel: item.tel,
+          githubUsername: item.githubUsername,
+          bio: item.bio,
+          courseCompletion: item.courseCompletion,
+          courseEngagement: item.courseEngagement,
+          projectDegree: item.projectDegree,
+          teamProjectDegree: item.teamProjectDegree,
+          expectedTypeWork: item.expectedTypeWork,
+          expectedContractType: item.expectedContractType,
+          monthsOfCommercialExp: item.monthsOfCommercialExp,
+          targetWorkCity: item.targetWorkCity,
+          expectedSalary: item.expectedSalary,
+          canTakeApprenticeship: item.canTakeApprenticeship,
+          education: item.education,
+          courses: item.courses,
+          workExperience: item.workExperience,
+          portfolioUrls: item.portfolioUrls,
+          scrumUrls: item.scrumUrls,
+          projectUrls: item.projectUrls,
+          firstLogin: item.firstLogin,
+        };
+      });
+
+      res.json({
+        success: true,
+        users: usersRes,
+        pages: totalPages,
+      });
+    } catch (e) {
+      res.json({
+        success: false,
+        message: e.message,
+      });
+    }
+  }
 
   //TYLKO USER ROLA USER useGuard()
   async userFoundJob(id: string, res: Response) {
@@ -22,6 +88,15 @@ export class UserService {
         { _id: id },
         { $set: { status: Status.HIRED, active: false, accessToken: null } },
       );
+
+      const allHr = await this.hrModule.find({});
+      allHr.map(async (item) => {
+        let users = item.users;
+        users = users.filter((userId) => userId.toString() !== id);
+        await item.save();
+        return users;
+      })
+
 
       if (!user) {
         throw new Error('Nie znaleziono użytkownika');

@@ -112,12 +112,6 @@ export class HrService {
         _id: id,
       });
 
-      if (hr.maxStudents <= hr.users.length) {
-        throw new Error(
-          `Przekroczyłeś maksymalną liczbę kursantów (${hr.maxStudents}), których możesz dodać do rozmowy`,
-        );
-      }
-
       const addUserToTalk = await this.user.findOne({ _id: userId });
 
       if (
@@ -130,7 +124,7 @@ export class HrService {
         { email: addUserToTalk.email },
         process.env.TOKEN_ADDED_USER_HR,
         {
-          expiresIn: '30s',
+          expiresIn: '7d',
         },
       );
 
@@ -139,7 +133,6 @@ export class HrService {
         {
           $set: {
             addedByHr: token,
-            // status: Status.CALL,
             dateAdded: new Date(),
           },
         },
@@ -243,7 +236,7 @@ export class HrService {
     }
   }
 
-  @Cron(CronExpression.EVERY_5_SECONDS)
+  @Cron(CronExpression.EVERY_2_HOURS)
   async checkToken(token, env, item, hr) {
     verify(token, env, async (err) => {
       if (err instanceof TokenExpiredError) {
