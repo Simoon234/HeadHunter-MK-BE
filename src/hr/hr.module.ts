@@ -4,6 +4,7 @@ import { HrController } from './hr.controller';
 import { HrService } from './hr.service';
 import { HrSchema, HumanResources } from '../schemas/hr.schema';
 import { User, UserSchema } from '../schemas/user.schema';
+import { EmailModule } from '../email/email.module';
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { User, UserSchema } from '../schemas/user.schema';
       { name: HumanResources.name, schema: HrSchema },
       { name: User.name, schema: UserSchema },
     ]),
+    EmailModule,
   ],
   controllers: [HrController],
   providers: [HrService],

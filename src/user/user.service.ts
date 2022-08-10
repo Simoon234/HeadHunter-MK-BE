@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Status, UserFilterInterface } from '../types';
@@ -18,7 +18,6 @@ export class UserService {
   //TYLKO USER ROLA USER useGuard()
   async userFoundJob(id: string, res: Response) {
     try {
-      console.log(id);
       const user = await this.userModel.findOneAndUpdate(
         { _id: id },
         { $set: { status: Status.HIRED, active: false, accessToken: null } },

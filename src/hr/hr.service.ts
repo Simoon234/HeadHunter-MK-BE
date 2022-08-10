@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { HumanResources } from '../schemas/hr.schema';
@@ -9,7 +9,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { Response } from 'express';
 import { hashPassword } from '../utils/hashPassword';
 import { HrUpdateDto } from './dto/hr-update.dto';
-import { ObjectId } from 'mongodb';
+import { EmailService } from '../email/email.service';
 
 @Injectable()
 export class HrService {
@@ -17,6 +17,7 @@ export class HrService {
     @InjectModel(HumanResources.name)
     private humanResources: Model<HumanResources>,
     @InjectModel(User.name) private user: Model<User>,
+    @Inject(EmailService) private emailService: EmailService,
   ) {}
 
   async getAllActiveUsers(
@@ -322,6 +323,35 @@ export class HrService {
       res.json({
         success: false,
         message: e.message,
+      });
+    }
+  }
+
+  async userFoundJob(id: string, res: Response) {
+    try {
+      const user = await this.user.findOneAndUpdate(
+        { _id: id },
+        { $set: { status: Status.HIRED, active: false, accessToken: null } },
+      );
+
+      if (!user) {
+        throw new Error('Nie znaleziono użytkownika');
+      }
+
+      await this.emailService.sendEmail(
+        process.env.ADMIN_EMAIL,
+        process.env.ADMIN_EMAIL,
+        '[MegaK HeadHunters] Student find job',
+        `User with ${id} got job!`,
+      );
+
+      res.json({
+        success: true,
+      });
+    } catch (e) {
+      res.json({
+        message: e.message,
+        success: false,
       });
     }
   }

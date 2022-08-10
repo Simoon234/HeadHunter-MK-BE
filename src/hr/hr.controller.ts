@@ -60,4 +60,9 @@ export class HrController {
   ) {
     return this.hr.getAllActiveUsers(id, itemsOnPage, page, res);
   }
+
+  @Get('/hired/:id')
+  userGotJob(@Param('id') id: string, @Res() res: Response) {
+    return this.hr.userFoundJob(id, res);
+  }
 }
