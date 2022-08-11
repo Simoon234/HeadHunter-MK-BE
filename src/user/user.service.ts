@@ -7,7 +7,7 @@ import { Response } from 'express';
 import { User } from '../schemas/user.schema';
 import { EmailService } from '../email/email.service';
 import { hashPassword } from '../utils/hashPassword';
-import {HumanResources} from "../schemas/hr.schema";
+import { HumanResources } from '../schemas/hr.schema';
 
 @Injectable()
 export class UserService {
@@ -93,7 +93,7 @@ export class UserService {
       allHr.map(async (item) => {
         item.users = item.users.filter((userId) => userId.toString() !== id);
         await item.save();
-      })
+      });
 
       if (!user) {
         throw new Error('Nie znaleziono użytkownika');

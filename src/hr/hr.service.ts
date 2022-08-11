@@ -56,6 +56,7 @@ export class HrService {
             },
           ],
         })
+        .sort({ lastName: 1, firstName: 1 })
         .skip(maxItemsOnPage * (currentPage - 1))
         .limit(maxItemsOnPage)
         .exec();
@@ -189,6 +190,7 @@ export class HrService {
         .find()
         .where('_id')
         .in(convertToString)
+        .sort({ lastName: 1, firstName: 1 })
         .skip(maxItemsOnPage * (currentPage - 1))
         .limit(maxItemsOnPage)
         .exec();
@@ -335,7 +337,7 @@ export class HrService {
       allHr.map(async (item) => {
         item.users = item.users.filter((userId) => userId.toString() !== id);
         await item.save();
-      })
+      });
 
       await this.emailService.sendEmail(
         process.env.ADMIN_EMAIL,
