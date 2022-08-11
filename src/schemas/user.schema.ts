@@ -209,10 +209,6 @@ export class User {
   })
   firstLogin: boolean;
 
-  @Prop({
-    default: null,
-  })
-  dateAdded: Date | null;
 
   @Prop({
     default: [],

@@ -261,7 +261,7 @@ export class UserService {
     return all.filter((user) => {
       let isValid = true;
       for (const key in query) {
-        isValid = isValid && user[key] == query[key];
+        isValid = isValid && user[key] <= query[key];
       }
       return isValid;
     });

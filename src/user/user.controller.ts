@@ -38,7 +38,7 @@ export class UserController {
     return this.userService.updateUserAfterLogin(id, res, user);
   }
 
-  @Get('/filter')
+  @Get(`/filter`)
   filterData(@Query() query: UserFilterInterface) {
     return this.userService.filterUsers(query);
   }

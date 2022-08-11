@@ -123,9 +123,6 @@ export class HrService {
       const token = sign(
         { email: addUserToTalk.email },
         process.env.TOKEN_ADDED_USER_HR,
-        {
-          expiresIn: '7d',
-        },
       );
 
       await this.user.findByIdAndUpdate(
@@ -133,7 +130,6 @@ export class HrService {
         {
           $set: {
             addedByHr: token,
-            dateAdded: new Date(),
           },
         },
       );
@@ -221,14 +217,13 @@ export class HrService {
           scrumUrls: item.scrumUrls,
           projectUrls: item.projectUrls,
           firstLogin: item.firstLogin,
-          dateAdded: item.dateAdded,
         };
       });
 
-      usersAdded.map(async (item) => {
-        const token = item.addedByHr;
-        await this.checkToken(token, process.env.TOKEN_ADDED_USER_HR, item, hr);
-      });
+      // usersAdded.map(async (item) => {
+      //   const token = item.addedByHr;
+      //   // await this.checkToken(token, process.env.TOKEN_ADDED_USER_HR, item, hr);
+      // });
 
       res.json({ success: true, users: usersRes, pages: totalPages });
     } catch (e) {
@@ -236,27 +231,27 @@ export class HrService {
     }
   }
 
-  @Cron(CronExpression.EVERY_2_HOURS)
-  async checkToken(token, env, item, hr) {
-    verify(token, env, async (err) => {
-      if (err instanceof TokenExpiredError) {
-        item.addedByHr = null;
-        item.dateAdded = null;
-        await item.save();
-
-        hr.users = hr.users.filter(
-          (id) => id.toString() !== item._id.toString(),
-        );
-        await hr.save();
-      }
-    });
-
-    return {
-      token,
-      env,
-      item,
-    };
-  }
+  // @Cron(CronExpression.EVERY_2_HOURS)
+  // async checkToken(token, env, item, hr) {
+  //   verify(token, env, async (err) => {
+  //     if (err instanceof TokenExpiredError) {
+  //       item.addedByHr = null;
+  //       item.dateAdded = null;
+  //       await item.save();
+  //
+  //       hr.users = hr.users.filter(
+  //         (id) => id.toString() !== item._id.toString(),
+  //       );
+  //       await hr.save();
+  //     }
+  //   });
+  //
+  //   return {
+  //     token,
+  //     env,
+  //     item,
+  //   };
+  // }
 
   async notInterested(userId: string, hrId: string, res: Response) {
     try {
