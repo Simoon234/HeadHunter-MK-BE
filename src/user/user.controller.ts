@@ -5,15 +5,11 @@ import {
   Inject,
   Param,
   Patch,
-  Query,
   Res,
-  UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { UserFilterInterface } from '../types';
 import { Response } from 'express';
 import { UserUpdateDto } from './dto/user.update.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 
 @Controller('/user')
 export class UserController {

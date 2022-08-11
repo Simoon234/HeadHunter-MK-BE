@@ -4,7 +4,8 @@ import {
   Get,
   Inject,
   Param,
-  Put, Query, Req,
+  Put,
+  Query,
   Res,
   UseGuards,
 } from '@nestjs/common';
@@ -12,7 +13,6 @@ import { HrService } from './hr.service';
 import { Response } from 'express';
 import { HrUpdateDto } from './dto/hr-update.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
-import {UserFilterInterface} from "../types";
 
 @Controller('/hr')
 export class HrController {
@@ -67,8 +67,14 @@ export class HrController {
     return this.hr.userFoundJob(id, res);
   }
 
-  @Get(`/filter`)
-  filterData(@Query() filter: any) {
-    return this.hr.filterUsers(filter);
+  @Get(`/filter-available/:page/:itemsOnPage/:id`)
+  filterData(
+    @Query() filter: any,
+    @Res() res: Response,
+    @Param('itemsOnPage') itemsOnPage: number,
+    @Param('page') page: number,
+    @Param('id') id: string,
+  ) {
+    return this.hr.filterAvailableStudents(filter, page, itemsOnPage, id, res);
   }
 }

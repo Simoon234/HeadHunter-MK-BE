@@ -209,7 +209,6 @@ export class User {
   })
   firstLogin: boolean;
 
-
   @Prop({
     default: [],
     type: Array,

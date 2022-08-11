@@ -2,14 +2,14 @@ import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { HumanResources } from '../schemas/hr.schema';
-import { sign, TokenExpiredError, verify } from 'jsonwebtoken';
+import { sign } from 'jsonwebtoken';
 import { User } from '../schemas/user.schema';
-import {Status, UserFilterInterface} from '../types';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { ContractType, Grade, Status, WorkType } from '../types';
 import { Response } from 'express';
 import { hashPassword } from '../utils/hashPassword';
 import { HrUpdateDto } from './dto/hr-update.dto';
 import { EmailService } from '../email/email.service';
+import { checkQueryUrl } from '../utils/checkQueryUrl';
 
 @Injectable()
 export class HrService {
@@ -27,11 +27,19 @@ export class HrService {
     res: Response,
   ) {
     try {
+      let maxItemsOnPage = itemsOnPage;
+      let currentPage = page;
+
+      if (page === 0) {
+        currentPage = 1;
+      }
+
+      if (itemsOnPage === 0) {
+        maxItemsOnPage = 1;
+      }
+
       const hr = await this.humanResources.findOne({ _id: id });
       const hrStudentsId = hr.users.map((item) => item.toString());
-
-      const maxItemsOnPage = itemsOnPage;
-      const currentPage = page;
 
       const getAllActiveStudents = await this.user
         .find({
@@ -160,6 +168,17 @@ export class HrService {
   // w parametrze przekażemy hr (req.user) i stamtąd wezmiemy id
   async usersAddedToTalkByCurrentHr(id, itemsOnPage, page, res) {
     try {
+      let maxItemsOnPage = itemsOnPage;
+      let currentPage = page;
+
+      if (page === 0) {
+        currentPage = 1;
+      }
+
+      if (itemsOnPage === 0) {
+        maxItemsOnPage = 1;
+      }
+
       const hr = await this.humanResources.findById({
         _id: id,
       });
@@ -170,9 +189,6 @@ export class HrService {
       }
 
       const convertToString = users.map((item) => item.toString());
-
-      const maxItemsOnPage = itemsOnPage;
-      const currentPage = page;
 
       const usersAdded = await this.user
         .find()
@@ -352,16 +368,195 @@ export class HrService {
     }
   }
 
-  //filter data ERROR WITH OD DO SALARY
-  async filterUsers(query) {
-    const all = await this.user.find().exec();
-    return all.filter((user) => {
-      let isValid = true;
-      for (let key in query) {
-        console.log({query})
-        isValid = isValid && user[key] == query[key];
+  async filterAvailableStudents(query, page, itemsOnPage, id, res) {
+    try {
+      const WORK_TYPE = Object.values(WorkType);
+      const GRADE = Object.values(Grade);
+      const CONTRACT_TYPE = Object.values(ContractType);
+
+      const courseCompletion = checkQueryUrl(query.courseCompletion);
+      const courseEngagement = checkQueryUrl(query.courseEngagement);
+      const projectDegree = checkQueryUrl(query.projectDegree);
+      const teamProjectDegree = checkQueryUrl(query.teamProjectDegree);
+      const expectedTypeWork = checkQueryUrl(query.expectedTypeWork);
+      const expectedContractType = checkQueryUrl(query.expectedContractType);
+
+      const hr = await this.humanResources.findOne({ _id: id });
+      const hrStudentsId = hr.users.map((item) => item.toString());
+
+      let maxItemsOnPage = itemsOnPage;
+      let currentPage = page;
+
+      if (page === 0) {
+        currentPage = 1;
       }
-      return isValid;
-    });
+
+      if (itemsOnPage === 0) {
+        maxItemsOnPage = 1;
+      }
+
+      const getAllActiveStudents = await this.user
+        .find({
+          $and: [
+            {
+              status: Status.ACTIVE,
+              active: true,
+              firstLogin: false,
+            },
+            {
+              courseCompletion: {
+                $in: courseCompletion ? courseCompletion : GRADE,
+              },
+            },
+            {
+              courseEngagement: {
+                $in: courseEngagement ? courseEngagement : GRADE,
+              },
+            },
+            {
+              projectDegree: { $in: projectDegree ? projectDegree : GRADE },
+            },
+            {
+              teamProjectDegree: {
+                $in: teamProjectDegree ? teamProjectDegree : GRADE,
+              },
+            },
+            {
+              expectedTypeWork: {
+                $in: expectedTypeWork ? expectedTypeWork : WORK_TYPE,
+              },
+            },
+            {
+              expectedContractType: {
+                $in: expectedContractType
+                  ? expectedContractType
+                  : CONTRACT_TYPE,
+              },
+            },
+            { canTakeApprenticeship: query.canTakeApprenticeship },
+            {
+              monthsOfCommercialExp:
+                !query.monthsOfCommercialExp || query.monthsOfCommercialExp < 0
+                  ? { $gte: 0 }
+                  : { $gte: query.monthsOfCommercialExp },
+            },
+            {
+              expectedSalary: {
+                $gte: query.expectedSalaryFrom ? query.expectedSalaryFrom : 0,
+                $lte: query.expectedSalaryTo ? query.expectedSalaryTo : 0,
+              },
+            },
+          ],
+        })
+        .exec();
+
+      const countElement = getAllActiveStudents.length;
+
+      const activeStudentsId = getAllActiveStudents
+        .filter((student) => !hrStudentsId.includes(student._id.toString()))
+        .map((el) => el._id.toString());
+
+      const getPaginationStudents = await this.user
+        .find({
+          $and: [
+            {
+              status: Status.ACTIVE,
+              active: true,
+              firstLogin: false,
+            },
+            {
+              _id: { $in: activeStudentsId },
+            },
+            {
+              courseCompletion: {
+                $in: courseCompletion ? courseCompletion : GRADE,
+              },
+            },
+            {
+              courseEngagement: {
+                $in: courseEngagement ? courseEngagement : GRADE,
+              },
+            },
+            {
+              projectDegree: { $in: projectDegree ? projectDegree : GRADE },
+            },
+            {
+              teamProjectDegree: {
+                $in: teamProjectDegree ? teamProjectDegree : GRADE,
+              },
+            },
+            {
+              expectedTypeWork: {
+                $in: expectedTypeWork ? expectedTypeWork : WORK_TYPE,
+              },
+            },
+            {
+              expectedContractType: {
+                $in: expectedContractType
+                  ? expectedContractType
+                  : CONTRACT_TYPE,
+              },
+            },
+            { canTakeApprenticeship: query.canTakeApprenticeship },
+            {
+              monthsOfCommercialExp:
+                !query.monthsOfCommercialExp || query.monthsOfCommercialExp < 0
+                  ? { $gte: 0 }
+                  : { $gte: query.monthsOfCommercialExp },
+            },
+            {
+              expectedSalary: {
+                $gte: query.expectedSalaryFrom ? query.expectedSalaryFrom : 0,
+                $lte: query.expectedSalaryTo ? query.expectedSalaryTo : 0,
+              },
+            },
+          ],
+        })
+        .sort({ lastName: 1, firstName: 1 })
+        .skip(maxItemsOnPage * (currentPage - 1))
+        .limit(maxItemsOnPage)
+        .exec();
+
+      const totalPages = Math.round(
+        (countElement - hr.users.length) / maxItemsOnPage,
+      );
+
+      const usersRes = getPaginationStudents.map((item) => {
+        return {
+          id: item.id,
+          email: item.email,
+          firstName: item.firstName,
+          lastName: item.lastName,
+          tel: item.tel,
+          githubUsername: item.githubUsername,
+          bio: item.bio,
+          courseCompletion: item.courseCompletion,
+          courseEngagement: item.courseEngagement,
+          projectDegree: item.projectDegree,
+          teamProjectDegree: item.teamProjectDegree,
+          expectedTypeWork: item.expectedTypeWork,
+          expectedContractType: item.expectedContractType,
+          monthsOfCommercialExp: item.monthsOfCommercialExp,
+          targetWorkCity: item.targetWorkCity,
+          expectedSalary: item.expectedSalary,
+          canTakeApprenticeship: item.canTakeApprenticeship,
+          education: item.education,
+          courses: item.courses,
+          workExperience: item.workExperience,
+          portfolioUrls: item.portfolioUrls,
+          scrumUrls: item.scrumUrls,
+          projectUrls: item.projectUrls,
+          firstLogin: item.firstLogin,
+        };
+      });
+
+      res.json({
+        success: true,
+        students: usersRes,
+        pages: totalPages,
+      });
+    } catch (e) {
+      res.json({ success: false, message: e.message });
+    }
   }
 }

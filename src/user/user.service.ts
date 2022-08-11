@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Status, UserFilterInterface } from '../types';
+import { Status } from '../types';
 import { UserUpdateDto } from './dto/user.update.dto';
 import { Response } from 'express';
 import { User } from '../schemas/user.schema';
