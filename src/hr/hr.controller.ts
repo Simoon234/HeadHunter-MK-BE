@@ -4,7 +4,7 @@ import {
   Get,
   Inject,
   Param,
-  Put, Query,
+  Put, Query, Req,
   Res,
   UseGuards,
 } from '@nestjs/common';
@@ -12,6 +12,7 @@ import { HrService } from './hr.service';
 import { Response } from 'express';
 import { HrUpdateDto } from './dto/hr-update.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
+import {UserFilterInterface} from "../types";
 
 @Controller('/hr')
 export class HrController {
@@ -64,5 +65,10 @@ export class HrController {
   @Get('/hired/:id')
   userGotJob(@Param('id') id: string, @Res() res: Response) {
     return this.hr.userFoundJob(id, res);
+  }
+
+  @Get(`/filter`)
+  filterData(@Query() filter: any) {
+    return this.hr.filterUsers(filter);
   }
 }

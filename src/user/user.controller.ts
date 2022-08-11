@@ -38,11 +38,6 @@ export class UserController {
     return this.userService.updateUserAfterLogin(id, res, user);
   }
 
-  @Get(`/filter`)
-  filterData(@Query() query: UserFilterInterface) {
-    return this.userService.filterUsers(query);
-  }
-
   @Get('/delete-account/:id')
   deleteAccount(@Param('id') id: string, @Res() res: Response) {
     return this.userService.deleteAccount(id, res);

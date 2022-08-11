@@ -254,19 +254,6 @@ export class UserService {
     }
   }
 
-  //filter data ERROR WITH OD DO SALARY
-  async filterUsers(query: UserFilterInterface) {
-    const all = await this.userModel.find().exec();
-
-    return all.filter((user) => {
-      let isValid = true;
-      for (const key in query) {
-        isValid = isValid && user[key] <= query[key];
-      }
-      return isValid;
-    });
-  }
-
   async deleteAccount(id: string, res: Response) {
     try {
       const user = await this.userModel.deleteOne({ _id: id });

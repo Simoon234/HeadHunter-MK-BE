@@ -4,7 +4,7 @@ import { Model } from 'mongoose';
 import { HumanResources } from '../schemas/hr.schema';
 import { sign, TokenExpiredError, verify } from 'jsonwebtoken';
 import { User } from '../schemas/user.schema';
-import { Status } from '../types';
+import {Status, UserFilterInterface} from '../types';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Response } from 'express';
 import { hashPassword } from '../utils/hashPassword';
@@ -350,5 +350,18 @@ export class HrService {
         success: false,
       });
     }
+  }
+
+  //filter data ERROR WITH OD DO SALARY
+  async filterUsers(query) {
+    const all = await this.user.find().exec();
+    return all.filter((user) => {
+      let isValid = true;
+      for (let key in query) {
+        console.log({query})
+        isValid = isValid && user[key] == query[key];
+      }
+      return isValid;
+    });
   }
 }
