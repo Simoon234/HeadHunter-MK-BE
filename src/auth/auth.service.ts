@@ -62,7 +62,7 @@ export class AuthService {
       const pwd = await verifyPassword(password, user.password);
 
       if (!pwd) {
-        throw new Error('Niepoprawne hasło');
+        throw new Error('Nieprawidłowe hasło');
       }
 
       const id = String(user._id);

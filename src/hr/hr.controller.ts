@@ -68,7 +68,7 @@ export class HrController {
   }
 
   @Get(`/filter-available/:page/:itemsOnPage/:id`)
-  filterData(
+  filterAvailableStudents(
     @Query() filter: any,
     @Res() res: Response,
     @Param('itemsOnPage') itemsOnPage: number,
@@ -76,5 +76,16 @@ export class HrController {
     @Param('id') id: string,
   ) {
     return this.hr.filterAvailableStudents(filter, page, itemsOnPage, id, res);
+  }
+
+  @Get(`/filter-to-talk/:page/:itemsOnPage/:id`)
+  filterToTalkStudents(
+    @Query() filter: any,
+    @Res() res: Response,
+    @Param('itemsOnPage') itemsOnPage: number,
+    @Param('page') page: number,
+    @Param('id') id: string,
+  ) {
+    return this.hr.filterToTalkStudents(filter, page, itemsOnPage, id, res);
   }
 }
