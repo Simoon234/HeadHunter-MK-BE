@@ -52,8 +52,35 @@ export class HrService {
       const countElement = getAllActiveStudents.length;
 
       const activeStudentsId = getAllActiveStudents
-        .filter((student) => !hrStudentsId.includes(student._id.toString()))
-        .map((el) => el._id.toString());
+        .filter((student) => !hrStudentsId.includes(student.id))
+        .map((el) => el.id);
+
+      const getAllStudents = (
+        await this.user.find({
+          $and: [
+            { status: Status.ACTIVE, active: true, firstLogin: false },
+            {
+              _id: { $in: activeStudentsId },
+            },
+          ],
+        })
+      ).map((item) => {
+        return {
+          id: item.id,
+          firstName: item.firstName,
+          lastName: item.lastName,
+          courseCompletion: item.courseCompletion,
+          courseEngagement: item.courseEngagement,
+          projectDegree: item.projectDegree,
+          teamProjectDegree: item.teamProjectDegree,
+          expectedTypeWork: item.expectedTypeWork,
+          expectedContractType: item.expectedContractType,
+          monthsOfCommercialExp: item.monthsOfCommercialExp,
+          targetWorkCity: item.targetWorkCity,
+          expectedSalary: item.expectedSalary,
+          canTakeApprenticeship: item.canTakeApprenticeship,
+        };
+      });
 
       const getPaginationStudents = await this.user
         .find({
@@ -76,12 +103,8 @@ export class HrService {
       const usersRes = getPaginationStudents.map((item) => {
         return {
           id: item.id,
-          email: item.email,
           firstName: item.firstName,
           lastName: item.lastName,
-          tel: item.tel,
-          githubUsername: item.githubUsername,
-          bio: item.bio,
           courseCompletion: item.courseCompletion,
           courseEngagement: item.courseEngagement,
           projectDegree: item.projectDegree,
@@ -92,20 +115,13 @@ export class HrService {
           targetWorkCity: item.targetWorkCity,
           expectedSalary: item.expectedSalary,
           canTakeApprenticeship: item.canTakeApprenticeship,
-          education: item.education,
-          courses: item.courses,
-          workExperience: item.workExperience,
-          portfolioUrls: item.portfolioUrls,
-          scrumUrls: item.scrumUrls,
-          projectUrls: item.projectUrls,
-          firstLogin: item.firstLogin,
         };
       });
 
       res.json({
         success: true,
         students: usersRes,
-        allStudents: getAllActiveStudents,
+        allStudents: getAllStudents,
         pages: totalPages,
       });
     } catch (e) {
@@ -191,11 +207,26 @@ export class HrService {
 
       const convertToString = users.map((item) => item.toString());
 
-      const usersAdded = await this.user
-        .find()
-        .where('_id')
-        .in(convertToString)
-        .exec();
+      const usersAdded = (
+        await this.user.find().where('_id').in(convertToString).exec()
+      ).map((item) => {
+        return {
+          id: item.id,
+          firstName: item.firstName,
+          lastName: item.lastName,
+          githubUsername: item.githubUsername,
+          courseCompletion: item.courseCompletion,
+          courseEngagement: item.courseEngagement,
+          projectDegree: item.projectDegree,
+          teamProjectDegree: item.teamProjectDegree,
+          expectedTypeWork: item.expectedTypeWork,
+          expectedContractType: item.expectedContractType,
+          monthsOfCommercialExp: item.monthsOfCommercialExp,
+          targetWorkCity: item.targetWorkCity,
+          expectedSalary: item.expectedSalary,
+          canTakeApprenticeship: item.canTakeApprenticeship,
+        };
+      });
 
       const countElement = usersAdded.length;
 
@@ -213,12 +244,9 @@ export class HrService {
       const usersRes = getStudents.map((item) => {
         return {
           id: item.id,
-          email: item.email,
           firstName: item.firstName,
           lastName: item.lastName,
-          tel: item.tel,
           githubUsername: item.githubUsername,
-          bio: item.bio,
           courseCompletion: item.courseCompletion,
           courseEngagement: item.courseEngagement,
           projectDegree: item.projectDegree,
@@ -229,13 +257,6 @@ export class HrService {
           targetWorkCity: item.targetWorkCity,
           expectedSalary: item.expectedSalary,
           canTakeApprenticeship: item.canTakeApprenticeship,
-          education: item.education,
-          courses: item.courses,
-          workExperience: item.workExperience,
-          portfolioUrls: item.portfolioUrls,
-          scrumUrls: item.scrumUrls,
-          projectUrls: item.projectUrls,
-          firstLogin: item.firstLogin,
         };
       });
       res.json({
@@ -248,28 +269,6 @@ export class HrService {
       res.json({ success: false, message: e.message });
     }
   }
-
-  // @Cron(CronExpression.EVERY_2_HOURS)
-  // async checkToken(token, env, item, hr) {
-  //   verify(token, env, async (err) => {
-  //     if (err instanceof TokenExpiredError) {
-  //       item.addedByHr = null;
-  //       item.dateAdded = null;
-  //       await item.save();
-  //
-  //       hr.users = hr.users.filter(
-  //         (id) => id.toString() !== item._id.toString(),
-  //       );
-  //       await hr.save();
-  //     }
-  //   });
-  //
-  //   return {
-  //     token,
-  //     env,
-  //     item,
-  //   };
-  // }
 
   async notInterested(userId: string, hrId: string, res: Response) {
     try {
@@ -453,8 +452,85 @@ export class HrService {
       const countElement = getAllActiveStudents.length;
 
       const activeStudentsId = getAllActiveStudents
-        .filter((student) => !hrStudentsId.includes(student._id.toString()))
-        .map((el) => el._id.toString());
+        .filter((student) => !hrStudentsId.includes(student.id))
+        .map((el) => el.id);
+
+      const getAllStudents = (
+        await this.user
+          .find({
+            $and: [
+              {
+                status: Status.ACTIVE,
+                active: true,
+                firstLogin: false,
+              },
+              {
+                _id: { $in: activeStudentsId },
+              },
+              {
+                courseCompletion: {
+                  $in: courseCompletion ? courseCompletion : GRADE,
+                },
+              },
+              {
+                courseEngagement: {
+                  $in: courseEngagement ? courseEngagement : GRADE,
+                },
+              },
+              {
+                projectDegree: { $in: projectDegree ? projectDegree : GRADE },
+              },
+              {
+                teamProjectDegree: {
+                  $in: teamProjectDegree ? teamProjectDegree : GRADE,
+                },
+              },
+              {
+                expectedTypeWork: {
+                  $in: expectedTypeWork ? expectedTypeWork : WORK_TYPE,
+                },
+              },
+              {
+                expectedContractType: {
+                  $in: expectedContractType
+                    ? expectedContractType
+                    : CONTRACT_TYPE,
+                },
+              },
+              { canTakeApprenticeship: query.canTakeApprenticeship },
+              {
+                monthsOfCommercialExp:
+                  !query.monthsOfCommercialExp ||
+                  query.monthsOfCommercialExp < 0
+                    ? { $gte: 0 }
+                    : { $gte: query.monthsOfCommercialExp },
+              },
+              {
+                expectedSalary: {
+                  $gte: query.expectedSalaryFrom ? query.expectedSalaryFrom : 0,
+                  $lte: query.expectedSalaryTo ? query.expectedSalaryTo : 0,
+                },
+              },
+            ],
+          })
+          .exec()
+      ).map((item) => {
+        return {
+          id: item.id,
+          firstName: item.firstName,
+          lastName: item.lastName,
+          courseCompletion: item.courseCompletion,
+          courseEngagement: item.courseEngagement,
+          projectDegree: item.projectDegree,
+          teamProjectDegree: item.teamProjectDegree,
+          expectedTypeWork: item.expectedTypeWork,
+          expectedContractType: item.expectedContractType,
+          monthsOfCommercialExp: item.monthsOfCommercialExp,
+          targetWorkCity: item.targetWorkCity,
+          expectedSalary: item.expectedSalary,
+          canTakeApprenticeship: item.canTakeApprenticeship,
+        };
+      });
 
       const getPaginationStudents = await this.user
         .find({
@@ -527,12 +603,8 @@ export class HrService {
       const usersRes = getPaginationStudents.map((item) => {
         return {
           id: item.id,
-          email: item.email,
           firstName: item.firstName,
           lastName: item.lastName,
-          tel: item.tel,
-          githubUsername: item.githubUsername,
-          bio: item.bio,
           courseCompletion: item.courseCompletion,
           courseEngagement: item.courseEngagement,
           projectDegree: item.projectDegree,
@@ -543,20 +615,13 @@ export class HrService {
           targetWorkCity: item.targetWorkCity,
           expectedSalary: item.expectedSalary,
           canTakeApprenticeship: item.canTakeApprenticeship,
-          education: item.education,
-          courses: item.courses,
-          workExperience: item.workExperience,
-          portfolioUrls: item.portfolioUrls,
-          scrumUrls: item.scrumUrls,
-          projectUrls: item.projectUrls,
-          firstLogin: item.firstLogin,
         };
       });
 
       res.json({
         success: true,
         students: usersRes,
-        allStudents: getAllActiveStudents,
+        allStudents: getAllStudents,
         pages: totalPages,
       });
     } catch (e) {
@@ -599,62 +664,82 @@ export class HrService {
 
       const convertToString = users.map((item) => item.toString());
 
-      const usersAdded = await this.user
-        .find({
-          $and: [
-            {
-              status: Status.ACTIVE,
-              active: true,
-              firstLogin: false,
-            },
-            {
-              courseCompletion: {
-                $in: courseCompletion ? courseCompletion : GRADE,
+      const usersAdded = (
+        await this.user
+          .find({
+            $and: [
+              {
+                status: Status.ACTIVE,
+                active: true,
+                firstLogin: false,
               },
-            },
-            {
-              courseEngagement: {
-                $in: courseEngagement ? courseEngagement : GRADE,
+              {
+                courseCompletion: {
+                  $in: courseCompletion ? courseCompletion : GRADE,
+                },
               },
-            },
-            {
-              projectDegree: { $in: projectDegree ? projectDegree : GRADE },
-            },
-            {
-              teamProjectDegree: {
-                $in: teamProjectDegree ? teamProjectDegree : GRADE,
+              {
+                courseEngagement: {
+                  $in: courseEngagement ? courseEngagement : GRADE,
+                },
               },
-            },
-            {
-              expectedTypeWork: {
-                $in: expectedTypeWork ? expectedTypeWork : WORK_TYPE,
+              {
+                projectDegree: { $in: projectDegree ? projectDegree : GRADE },
               },
-            },
-            {
-              expectedContractType: {
-                $in: expectedContractType
-                  ? expectedContractType
-                  : CONTRACT_TYPE,
+              {
+                teamProjectDegree: {
+                  $in: teamProjectDegree ? teamProjectDegree : GRADE,
+                },
               },
-            },
-            { canTakeApprenticeship: query.canTakeApprenticeship },
-            {
-              monthsOfCommercialExp:
-                !query.monthsOfCommercialExp || query.monthsOfCommercialExp < 0
-                  ? { $gte: 0 }
-                  : { $gte: query.monthsOfCommercialExp },
-            },
-            {
-              expectedSalary: {
-                $gte: query.expectedSalaryFrom ? query.expectedSalaryFrom : 0,
-                $lte: query.expectedSalaryTo ? query.expectedSalaryTo : 0,
+              {
+                expectedTypeWork: {
+                  $in: expectedTypeWork ? expectedTypeWork : WORK_TYPE,
+                },
               },
-            },
-          ],
-        })
-        .where('_id')
-        .in(convertToString)
-        .exec();
+              {
+                expectedContractType: {
+                  $in: expectedContractType
+                    ? expectedContractType
+                    : CONTRACT_TYPE,
+                },
+              },
+              { canTakeApprenticeship: query.canTakeApprenticeship },
+              {
+                monthsOfCommercialExp:
+                  !query.monthsOfCommercialExp ||
+                  query.monthsOfCommercialExp < 0
+                    ? { $gte: 0 }
+                    : { $gte: query.monthsOfCommercialExp },
+              },
+              {
+                expectedSalary: {
+                  $gte: query.expectedSalaryFrom ? query.expectedSalaryFrom : 0,
+                  $lte: query.expectedSalaryTo ? query.expectedSalaryTo : 0,
+                },
+              },
+            ],
+          })
+          .where('_id')
+          .in(convertToString)
+          .exec()
+      ).map((item) => {
+        return {
+          id: item.id,
+          firstName: item.firstName,
+          lastName: item.lastName,
+          githubUsername: item.githubUsername,
+          courseCompletion: item.courseCompletion,
+          courseEngagement: item.courseEngagement,
+          projectDegree: item.projectDegree,
+          teamProjectDegree: item.teamProjectDegree,
+          expectedTypeWork: item.expectedTypeWork,
+          expectedContractType: item.expectedContractType,
+          monthsOfCommercialExp: item.monthsOfCommercialExp,
+          targetWorkCity: item.targetWorkCity,
+          expectedSalary: item.expectedSalary,
+          canTakeApprenticeship: item.canTakeApprenticeship,
+        };
+      });
 
       const countElement = usersAdded.length;
 
@@ -723,12 +808,9 @@ export class HrService {
       const usersRes = getStudents.map((item) => {
         return {
           id: item.id,
-          email: item.email,
           firstName: item.firstName,
           lastName: item.lastName,
-          tel: item.tel,
           githubUsername: item.githubUsername,
-          bio: item.bio,
           courseCompletion: item.courseCompletion,
           courseEngagement: item.courseEngagement,
           projectDegree: item.projectDegree,
@@ -739,13 +821,6 @@ export class HrService {
           targetWorkCity: item.targetWorkCity,
           expectedSalary: item.expectedSalary,
           canTakeApprenticeship: item.canTakeApprenticeship,
-          education: item.education,
-          courses: item.courses,
-          workExperience: item.workExperience,
-          portfolioUrls: item.portfolioUrls,
-          scrumUrls: item.scrumUrls,
-          projectUrls: item.projectUrls,
-          firstLogin: item.firstLogin,
         };
       });
 

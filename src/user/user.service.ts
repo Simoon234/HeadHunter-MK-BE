@@ -17,70 +17,6 @@ export class UserService {
     @Inject(EmailService) private emailService: EmailService,
   ) {}
 
-  //PAGINATION
-  async getAllActiveUsers(itemsOnPage: number, page: number, res: Response) {
-    try {
-      const maxItemsOnPage = itemsOnPage;
-      const currentPage = page;
-      const countElement = await this.userModel.count({
-        status: Status.ACTIVE,
-        active: true,
-        firstLogin: false,
-      });
-      const getAllActiveUsers = await this.userModel
-        .find({
-          status: Status.ACTIVE,
-          active: true,
-          firstLogin: false,
-        })
-        .skip(maxItemsOnPage * (currentPage - 1))
-        .limit(maxItemsOnPage)
-        .exec();
-
-      const totalPages = Math.round(countElement / maxItemsOnPage);
-
-      const usersRes = getAllActiveUsers.map((item) => {
-        return {
-          id: item.id,
-          email: item.email,
-          firstName: item.firstName,
-          lastName: item.lastName,
-          tel: item.tel,
-          githubUsername: item.githubUsername,
-          bio: item.bio,
-          courseCompletion: item.courseCompletion,
-          courseEngagement: item.courseEngagement,
-          projectDegree: item.projectDegree,
-          teamProjectDegree: item.teamProjectDegree,
-          expectedTypeWork: item.expectedTypeWork,
-          expectedContractType: item.expectedContractType,
-          monthsOfCommercialExp: item.monthsOfCommercialExp,
-          targetWorkCity: item.targetWorkCity,
-          expectedSalary: item.expectedSalary,
-          canTakeApprenticeship: item.canTakeApprenticeship,
-          education: item.education,
-          courses: item.courses,
-          workExperience: item.workExperience,
-          portfolioUrls: item.portfolioUrls,
-          scrumUrls: item.scrumUrls,
-          projectUrls: item.projectUrls,
-          firstLogin: item.firstLogin,
-        };
-      });
-
-      res.json({
-        success: true,
-        users: usersRes,
-        pages: totalPages,
-      });
-    } catch (e) {
-      res.json({
-        success: false,
-        message: e.message,
-      });
-    }
-  }
-
   //TYLKO USER ROLA USER useGuard()
   async userFoundJob(id: string, res: Response) {
     try {
@@ -240,14 +176,20 @@ export class UserService {
   async getSingleUserCV(id: string, res: Response) {
     try {
       const user = await this.userModel.findOne({ _id: id });
+
+      if (!user) {
+        throw new Error('Nie ma użytkownika o podanym ID');
+      }
+
       res.json({
-        user: user === null ? 'User not found' : user,
+        success: true,
+        user,
       });
     } catch (e) {
       if (e) {
         res.json({
-          message: 'Incorrect id',
-          defaultMessage: e.message,
+          success: false,
+          message: e.message,
         });
       }
       console.error(e);
