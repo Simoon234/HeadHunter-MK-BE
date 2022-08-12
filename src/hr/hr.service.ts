@@ -104,7 +104,8 @@ export class HrService {
 
       res.json({
         success: true,
-        users: usersRes,
+        students: usersRes,
+        allStudents: getAllActiveStudents,
         pages: totalPages,
       });
     } catch (e) {
@@ -237,7 +238,12 @@ export class HrService {
           firstLogin: item.firstLogin,
         };
       });
-      res.json({ success: true, users: usersRes, pages: totalPages });
+      res.json({
+        success: true,
+        students: usersRes,
+        allStudents: usersAdded,
+        pages: totalPages,
+      });
     } catch (e) {
       res.json({ success: false, message: e.message });
     }
@@ -550,6 +556,7 @@ export class HrService {
       res.json({
         success: true,
         students: usersRes,
+        allStudents: getAllActiveStudents,
         pages: totalPages,
       });
     } catch (e) {
@@ -745,6 +752,7 @@ export class HrService {
       res.json({
         success: true,
         students: usersRes,
+        allStudents: usersAdded,
         pages: totalPages,
       });
     } catch (e) {
