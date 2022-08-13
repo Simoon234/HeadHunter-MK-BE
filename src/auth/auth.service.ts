@@ -310,25 +310,29 @@ export class AuthService {
 
   async remindPassword(email: string, res: Response): Promise<void> {
     try {
-      const user = await this.user.findOne({ email });
+      const user = await this.user.find().exec();
+      const hr = await this.user.find().exec();
+      const admin = await this.user.find().exec();
 
-      if (!user) {
+      const allUsers = [...user, ...hr, ...admin].find((user) => user.email === email);
+
+      if (!allUsers) {
         sendError('Brak użytkownika o podanym adresie email');
       }
 
-      user.refreshToken = sign({ email: user.email }, REFRESH_TOKEN_REMINDER, {
+      allUsers.refreshToken = sign({ email: allUsers.email }, REFRESH_TOKEN_REMINDER, {
         expiresIn: '1h',
       });
-      await user.save();
+      await allUsers.save();
 
       await this.mailService.sendEmail(
-        user.email,
+          allUsers.email,
         ADMIN_EMAIL,
         '[NO-REPLY] Password reset',
         resetPassword(
-          user.firstName === null ? '' : user.firstName,
-          user._id.toString(),
-          user.refreshToken,
+            allUsers.firstName === null ? '' : allUsers.firstName,
+            allUsers._id.toString(),
+            allUsers.refreshToken,
         ),
       );
 
