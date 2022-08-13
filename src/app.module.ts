@@ -7,13 +7,14 @@ import { AdminModule } from './admin/admin.module';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AuthModule } from './auth/auth.module';
+import { CONNECTION_DB } from '../config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    MongooseModule.forRoot(process.env.CONNECTION),
+    MongooseModule.forRoot(CONNECTION_DB),
     AdminModule,
     UserModule,
     HrModule,

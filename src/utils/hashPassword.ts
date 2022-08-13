@@ -1,8 +1,8 @@
-import { compare, hash } from "bcrypt";
+import { compare, hash } from 'bcrypt';
 
 export const verifyPassword = (
   password: string,
-  storedPassword: string
+  storedPassword: string,
 ): Promise<boolean> => {
   return compare(password, storedPassword);
 };

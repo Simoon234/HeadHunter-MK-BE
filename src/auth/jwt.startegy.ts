@@ -6,6 +6,7 @@ import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { HumanResources } from '../schemas/hr.schema';
 import { Admin } from 'src/schemas/admin.schema';
+import { LOG_TOKEN } from 'config';
 
 function cookieExtract(req: any): null | string {
   return req && req.cookies ? req.cookies?.jwt ?? null : null;
@@ -20,7 +21,7 @@ export class JwtStr extends PassportStrategy(Strategy) {
   ) {
     super({
       jwtFromRequest: cookieExtract,
-      secretOrKey: process.env.LOG_TOKEN,
+      secretOrKey: LOG_TOKEN,
     });
   }
 

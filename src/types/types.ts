@@ -62,7 +62,6 @@ export interface AddStudentInterface {
   bonusProjectUrls: string[];
 }
 
-
 export interface Person {
   id: string;
   accessToken: string;

@@ -1,28 +1,29 @@
-import { Inject, Injectable } from "@nestjs/common";
-import { InjectModel } from "@nestjs/mongoose";
-import { Model } from "mongoose";
-import { Status } from "../types";
-import { UserUpdateDto } from "./dto/user.update.dto";
-import { Response } from "express";
-import { User } from "../schemas/user.schema";
-import { EmailService } from "../email/email.service";
-import { hashPassword } from "../utils/hashPassword";
-import { HumanResources } from "../schemas/hr.schema";
+import { Inject, Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Status } from '../types';
+import { UserUpdateDto } from './dto/user.update.dto';
+import { Response } from 'express';
+import { User } from '../schemas/user.schema';
+import { EmailService } from '../email/email.service';
+import { hashPassword } from '../utils/hashPassword';
+import { HumanResources } from '../schemas/hr.schema';
+import { sendError } from '../utils/sendError';
+import { ADMIN_EMAIL } from 'config';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
     @InjectModel(HumanResources.name) private hrModule: Model<HumanResources>,
-    @Inject(EmailService) private emailService: EmailService
-  ) {
-  }
+    @Inject(EmailService) private emailService: EmailService,
+  ) {}
 
   async userFoundJob(id: string, res: Response): Promise<void> {
     try {
       const user = await this.userModel.findOneAndUpdate(
         { _id: id },
-        { $set: { status: Status.HIRED, active: false, accessToken: null } }
+        { $set: { status: Status.HIRED, active: false, accessToken: null } },
       );
 
       const allHr = await this.hrModule.find({});
@@ -32,12 +33,12 @@ export class UserService {
       });
 
       if (!user) {
-        throw new Error('Nie znaleziono użytkownika');
+        sendError('Nie znaleziono użytkownika');
       }
 
       await this.emailService.sendEmail(
-        process.env.ADMIN_EMAIL,
-        process.env.ADMIN_EMAIL,
+        ADMIN_EMAIL,
+        ADMIN_EMAIL,
         '[MegaK HeadHunters] Student find job',
         `User with ${id} got job!`,
       );
@@ -86,25 +87,25 @@ export class UserService {
       portfolioUrls,
       scrumUrls,
       password,
-      passwordRepeat
+      passwordRepeat,
     }: UserUpdateDto,
   ): Promise<void> {
     try {
       const findUser = await this.userModel.findOne({ _id: id });
       const getAllUsers = (await this.userModel.find().exec()).filter(
-        (user) => user.email !== findUser.email
+        (user) => user.email !== findUser.email,
       );
-      let hashPwd = "";
+      let hashPwd = '';
 
       for (const user of getAllUsers) {
         if (user.email === email) {
-          throw new Error("Podany adres email istnieje w bazie danych");
+          sendError('Podany adres email istnieje w bazie danych');
         }
       }
 
       if (password.length !== 0) {
         if (password !== passwordRepeat) {
-          throw new Error('Hasła nie są takie same');
+          sendError('Hasła nie są takie same');
         }
         hashPwd = await hashPassword(password);
       }
@@ -178,12 +179,12 @@ export class UserService {
       const user = await this.userModel.findOne({ _id: id });
 
       if (!user) {
-        throw new Error("Nie ma użytkownika o podanym ID");
+        sendError('Nie ma użytkownika o podanym ID');
       }
 
       res.json({
         success: true,
-        user
+        user,
       });
     } catch (e) {
       if (e) {
@@ -203,16 +204,16 @@ export class UserService {
       const user = await this.userModel.deleteOne({ _id: id });
 
       if (user.deletedCount <= 0) {
-        message = "Użytkownik o podanym ID nie istnieje";
+        message = 'Użytkownik o podanym ID nie istnieje';
         success = true;
       } else {
-        message = "Użytkownik został usunięty";
+        message = 'Użytkownik został usunięty';
         success = false;
       }
 
       res.status(204).json({
         message,
-        success
+        success,
       });
     } catch (e) {
       if (e) {

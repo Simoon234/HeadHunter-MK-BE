@@ -1,15 +1,16 @@
-import { Inject, Injectable } from "@nestjs/common";
-import { InjectModel } from "@nestjs/mongoose";
-import { Model } from "mongoose";
-import { HumanResources } from "../schemas/hr.schema";
-import { sign } from "jsonwebtoken";
-import { User } from "../schemas/user.schema";
-import { ContractType, Grade, Status, WorkType } from "../types";
-import { Response } from "express";
-import { hashPassword } from "../utils/hashPassword";
-import { HrUpdateDto } from "./dto/hr-update.dto";
-import { EmailService } from "../email/email.service";
-import { checkQueryUrl } from "../utils/checkQueryUrl";
+import { Inject, Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { HumanResources } from '../schemas/hr.schema';
+import { sign } from 'jsonwebtoken';
+import { User } from '../schemas/user.schema';
+import { ContractType, Grade, Status, WorkType } from '../types';
+import { Response } from 'express';
+import { hashPassword } from '../utils/hashPassword';
+import { HrUpdateDto } from './dto/hr-update.dto';
+import { EmailService } from '../email/email.service';
+import { checkQueryUrl } from '../utils/checkQueryUrl';
+import { ADMIN_EMAIL, TOKEN_ADDED_USER_HR } from '../../config';
 
 @Injectable()
 export class HrService {
@@ -17,15 +18,14 @@ export class HrService {
     @InjectModel(HumanResources.name)
     private humanResources: Model<HumanResources>,
     @InjectModel(User.name) private user: Model<User>,
-    @Inject(EmailService) private emailService: EmailService
-  ) {
-  }
+    @Inject(EmailService) private emailService: EmailService,
+  ) {}
 
   async getAllActiveUsers(
     id: string,
     itemsOnPage: number,
     page: number,
-    res: Response
+    res: Response,
   ): Promise<void> {
     try {
       let maxItemsOnPage = itemsOnPage;
@@ -136,7 +136,7 @@ export class HrService {
   async addToTalk(id: string, userId: string, res: Response): Promise<void> {
     try {
       const hr = await this.humanResources.findById({
-        _id: id
+        _id: id,
       });
 
       const addUserToTalk = await this.user.findOne({ _id: userId });
@@ -147,10 +147,7 @@ export class HrService {
       ) {
         throw new Error('Użytkownik nie jest aktywny');
       }
-      const token = sign(
-        { email: addUserToTalk.email },
-        process.env.TOKEN_ADDED_USER_HR,
-      );
+      const token = sign({ email: addUserToTalk.email }, TOKEN_ADDED_USER_HR);
 
       await this.user.findByIdAndUpdate(
         { _id: userId },
@@ -264,7 +261,7 @@ export class HrService {
         success: true,
         students: usersRes,
         allStudents: usersAdded,
-        pages: totalPages
+        pages: totalPages,
       });
     } catch (e) {
       res.json({ success: false, message: e.message });
@@ -274,16 +271,16 @@ export class HrService {
   async notInterested(
     userId: string,
     hrId: string,
-    res: Response
+    res: Response,
   ): Promise<void> {
     try {
       await this.user.findOneAndUpdate(
         { _id: userId },
-        { $set: { addedByHr: null } }
+        { $set: { addedByHr: null } },
       );
 
       const hr = await this.humanResources.findById({
-        _id: hrId
+        _id: hrId,
       });
       hr.users = hr.users.filter((id) => id.toString() !== userId);
       await hr.save();
@@ -341,11 +338,11 @@ export class HrService {
     try {
       const user = await this.user.findOneAndUpdate(
         { _id: id },
-        { $set: { status: Status.HIRED, active: false, accessToken: null } }
+        { $set: { status: Status.HIRED, active: false, accessToken: null } },
       );
 
       if (!user) {
-        throw new Error("Nie znaleziono użytkownika");
+        throw new Error('Nie znaleziono użytkownika');
       }
 
       const allHr = await this.humanResources.find({});
@@ -355,19 +352,19 @@ export class HrService {
       });
 
       await this.emailService.sendEmail(
-        process.env.ADMIN_EMAIL,
-        process.env.ADMIN_EMAIL,
+        ADMIN_EMAIL,
+        ADMIN_EMAIL,
         '[MegaK HeadHunters] Student find job',
         `User with ${id} got job!`,
       );
 
       res.json({
-        success: true
+        success: true,
       });
     } catch (e) {
       res.json({
         message: e.message,
-        success: false
+        success: false,
       });
     }
   }
@@ -377,7 +374,7 @@ export class HrService {
     page: number,
     itemsOnPage: number,
     id: string,
-    res: Response
+    res: Response,
   ): Promise<void> {
     try {
       const WORK_TYPE = Object.values(WorkType);
@@ -633,7 +630,7 @@ export class HrService {
         success: true,
         students: usersRes,
         allStudents: getAllStudents,
-        pages: totalPages
+        pages: totalPages,
       });
     } catch (e) {
       res.json({ success: false, message: e.message });
@@ -645,7 +642,7 @@ export class HrService {
     page: number,
     itemsOnPage: number,
     id: string,
-    res: Response
+    res: Response,
   ): Promise<void> {
     try {
       const WORK_TYPE = Object.values(WorkType);

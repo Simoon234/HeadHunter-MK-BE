@@ -1,18 +1,20 @@
-import { HttpException, HttpStatus, Inject, Injectable } from "@nestjs/common";
-import { InjectModel } from "@nestjs/mongoose";
-import { User } from "src/schemas/user.schema";
-import { Model } from "mongoose";
-import { LogDto } from "./dto/log.dto";
-import { v4 as uuid } from "uuid";
-import { Response } from "express";
-import { sign } from "jsonwebtoken";
-import { RegisterDto } from "./dto/register.dto";
-import { hashPassword, verifyPassword } from "../utils/hashPassword";
-import { HumanResources } from "src/schemas/hr.schema";
-import { EmailService } from "../email/email.service";
-import { PasswordResetRes, Person, Role, TokenGenerator } from "../types";
-import { Admin } from "../schemas/admin.schema";
-import { resetPassword } from "../templates/email/passwordReset";
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { User } from 'src/schemas/user.schema';
+import { Model } from 'mongoose';
+import { LogDto } from './dto/log.dto';
+import { v4 as uuid } from 'uuid';
+import { Response } from 'express';
+import { sign } from 'jsonwebtoken';
+import { RegisterDto } from './dto/register.dto';
+import { hashPassword, verifyPassword } from '../utils/hashPassword';
+import { HumanResources } from 'src/schemas/hr.schema';
+import { EmailService } from '../email/email.service';
+import { PasswordResetRes, Person, Role, TokenGenerator } from '../types';
+import { Admin } from '../schemas/admin.schema';
+import { resetPassword } from '../templates/email/passwordReset';
+import { sendError } from 'src/utils/sendError';
+import { ADMIN_EMAIL, LOG_TOKEN, REFRESH_TOKEN_REMINDER } from 'config';
 
 @Injectable()
 export class AuthService {
@@ -20,26 +22,25 @@ export class AuthService {
     @InjectModel(User.name) private user: Model<User>,
     @InjectModel(HumanResources.name) private hr: Model<HumanResources>,
     @Inject(EmailService) private mailService: EmailService,
-    @InjectModel(Admin.name) private admin: Model<Admin>
-  ) {
-  }
+    @InjectModel(Admin.name) private admin: Model<Admin>,
+  ) {}
 
   private static createToken(
     currentTokenId: string,
-    id: string
+    id: string,
   ): TokenGenerator {
     const payload: { id: string; userId: string } = {
       id: currentTokenId,
-      userId: id
+      userId: id,
     };
     const expiresIn = 60 * 60 * 24;
-    const accessToken = sign(payload, process.env.LOG_TOKEN, {
-      expiresIn
+    const accessToken = sign(payload, LOG_TOKEN, {
+      expiresIn,
     });
 
     return {
       accessToken,
-      expiresIn
+      expiresIn,
     };
   }
 
@@ -82,7 +83,7 @@ export class AuthService {
       portfolioUrls: student.portfolioUrls,
       scrumUrls: student.scrumUrls,
       projectUrls: student.projectUrls,
-      firstLogin: student.firstLogin
+      firstLogin: student.firstLogin,
     };
   }
 
@@ -90,33 +91,33 @@ export class AuthService {
     id: string,
     registerToken: string,
     obj: RegisterDto,
-    res: Response
+    res: Response,
   ) {
     try {
       const get = await this.user.findById({ _id: id });
       if (get.registerToken === null && get.active === true) {
-        throw new Error("You already registered");
+        throw new Error('You already registered');
       }
 
       if (obj.password !== obj.passwordRepeat) {
-        throw new Error("Password is not the same");
+        throw new Error('Password is not the same');
       }
 
       const hashPwd = await hashPassword(obj.password);
 
       await this.user.updateOne(
         { _id: id },
-        { $set: { password: hashPwd, active: true, registerToken: null } }
+        { $set: { password: hashPwd, active: true, registerToken: null } },
       );
 
       res.json({
         registeredId: get._id,
-        success: true
+        success: true,
       });
     } catch (err) {
       res.json({
         success: false,
-        message: err.message
+        message: err.message,
       });
       console.error(err);
     }
@@ -147,7 +148,7 @@ export class AuthService {
       portfolioUrls: student.portfolioUrls,
       scrumUrls: student.scrumUrls,
       projectUrls: student.projectUrls,
-      firstLogin: student.firstLogin
+      firstLogin: student.firstLogin,
     };
   }
 
@@ -162,25 +163,25 @@ export class AuthService {
       const [user] = [...users, ...hr, ...admins];
 
       if (!user) {
-        throw new Error("Nie znaleziono użytkownika o podanym adresie email");
+        sendError('Nie znaleziono użytkownika o podanym adresie email');
       }
 
       const pwd = await verifyPassword(password, user.password);
 
       if (!pwd) {
-        throw new Error("Nieprawidłowe hasło");
+        throw new Error('Nieprawidłowe hasło');
       }
 
       const id = String(user._id);
       const token = AuthService.createToken(
         await AuthService.generateToken(user),
-        id
+        id,
       );
 
       let resUser: any = {
         id: user._id,
         email: user.email,
-        role: user.role
+        role: user.role,
       };
 
       if (user.role === Role.ADMIN) {
@@ -199,7 +200,7 @@ export class AuthService {
       if (user.role === Role.STUDENT) {
         resUser = {
           ...resUser,
-          ...AuthService.loginUserHandler(user)
+          ...AuthService.loginUserHandler(user),
         };
       }
 
@@ -222,16 +223,16 @@ export class AuthService {
     id: string,
     registerToken: string,
     obj: RegisterDto,
-    res: Response
+    res: Response,
   ): Promise<void> {
     try {
       const get = await this.hr.findById({ _id: id });
       if (get.registerToken === null && get.active === true) {
-        throw new Error("You already registered");
+        throw new Error('You already registered');
       }
 
       if (obj.password !== obj.passwordRepeat) {
-        throw new Error("Password is not the same");
+        throw new Error('Password is not the same');
       }
 
       const hashPwd = await hashPassword(obj.password);
@@ -261,7 +262,7 @@ export class AuthService {
       if (person.role === Role.ADMIN) {
         user = await this.admin.find({ _id: person.id }).exec();
         resUser = {
-          email: user[0].email
+          email: user[0].email,
         };
       }
 
@@ -279,7 +280,7 @@ export class AuthService {
       if (person.role === Role.STUDENT) {
         user = await this.user.find({ _id: person.id }).exec();
         resUser = {
-          ...AuthService.checkAuthHandler(user[0])
+          ...AuthService.checkAuthHandler(user[0]),
         };
       }
 
@@ -320,7 +321,7 @@ export class AuthService {
     console.log(user);
 
     if (!user) {
-      throw new HttpException("No user found", HttpStatus.NOT_FOUND);
+      throw new HttpException('No user found', HttpStatus.NOT_FOUND);
     }
 
     if (!user.email) {
@@ -330,35 +331,31 @@ export class AuthService {
       );
     }
 
-    user.refreshToken = sign(
-      { email: user.email },
-      process.env.REFRESH_TOKEN_REMINDER,
-      {
-        expiresIn: '1h',
-      },
-    );
+    user.refreshToken = sign({ email: user.email }, REFRESH_TOKEN_REMINDER, {
+      expiresIn: '1h',
+    });
     await user.save();
 
     await this.mailService.sendEmail(
       user.email,
-      process.env.ADMIN_EMAIL,
+      ADMIN_EMAIL,
       '[NO-REPLY] Password reset',
       resetPassword(
         user.firstName === null ? '' : user.firstName,
         user._id.toString(),
-        user.refreshToken
+        user.refreshToken,
       ),
     );
 
     return {
-      message: "Check your email address."
+      message: 'Check your email address.',
     };
   }
 
   async changePassword(
     id: string,
     refreshToken: string,
-    password: string
+    password: string,
   ): Promise<PasswordResetRes> {
     const users = await this.user.find({ _id: id }).exec();
     const hr = await this.hr.find({ _id: id }).exec();
@@ -367,7 +364,7 @@ export class AuthService {
     const [user] = [...users, ...hr, ...admins];
 
     if (!user) {
-      throw new HttpException("User not exist", HttpStatus.BAD_REQUEST);
+      throw new HttpException('User not exist', HttpStatus.BAD_REQUEST);
     }
 
     user.password = await hashPassword(password);

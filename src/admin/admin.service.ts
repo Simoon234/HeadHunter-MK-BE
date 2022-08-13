@@ -1,19 +1,20 @@
-import { HttpException, HttpStatus, Inject, Injectable } from "@nestjs/common";
-import { InjectModel } from "@nestjs/mongoose";
-import { Model } from "mongoose";
-import { Response } from "express";
-import { EmailService } from "../email/email.service";
-import { sign, verify } from "jsonwebtoken";
-import { HrDto } from "../hr/dto/hr.dto";
-import { hashPassword } from "../utils/hashPassword";
-import { Payload, Role } from "../types";
-import { HumanResources } from "../schemas/hr.schema";
-import { User, UserDocument } from "../schemas/user.schema";
-import { Admin, AdminDocument } from "../schemas/admin.schema";
-import { UpdateAdmin } from "./dto/update-admin.dto";
-import { AddUsersDto } from "./dto/add-users.dto";
-import { ObjectId } from "mongodb";
-import { registerHr, registerUser } from "../templates/email/registration";
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Response } from 'express';
+import { EmailService } from '../email/email.service';
+import { sign, verify } from 'jsonwebtoken';
+import { HrDto } from '../hr/dto/hr.dto';
+import { hashPassword } from '../utils/hashPassword';
+import { Payload, Role } from '../types';
+import { HumanResources } from '../schemas/hr.schema';
+import { User, UserDocument } from '../schemas/user.schema';
+import { Admin, AdminDocument } from '../schemas/admin.schema';
+import { UpdateAdmin } from './dto/update-admin.dto';
+import { AddUsersDto } from './dto/add-users.dto';
+import { ObjectId } from 'mongodb';
+import { registerHr, registerUser } from '../templates/email/registration';
+import { ADMIN_EMAIL, REGISTER_TOKEN_USER } from '../../config';
 
 @Injectable()
 export class AdminService {
@@ -22,9 +23,8 @@ export class AdminService {
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @Inject(EmailService) private emailService: EmailService,
     @InjectModel(HumanResources.name)
-    private humanResources: Model<HumanResources>
-  ) {
-  }
+    private humanResources: Model<HumanResources>,
+  ) {}
 
   private static filterMethod(obj) {
     const {
@@ -55,7 +55,7 @@ export class AdminService {
       if (role === Role.HR) {
         await this.emailService.sendEmail(
           payload.email,
-          process.env.ADMIN_EMAIL,
+          ADMIN_EMAIL,
           '[MegaK HeadHunters] Register',
           registerHr(payload.id, token),
         );
@@ -63,7 +63,7 @@ export class AdminService {
       if (role === Role.STUDENT) {
         await this.emailService.sendEmail(
           payload.email,
-          process.env.ADMIN_EMAIL,
+          ADMIN_EMAIL,
           '[MegaK HeadHunters] Register',
           registerUser(payload.id, token),
         );
@@ -71,7 +71,7 @@ export class AdminService {
     } else {
       throw new HttpException(
         'You had 7 days for registration. Token expired. Please contact - ' +
-          process.env.ADMIN_EMAIL,
+          ADMIN_EMAIL,
         HttpStatus.FORBIDDEN,
       );
     }
@@ -130,7 +130,7 @@ export class AdminService {
             email: user.email,
             id: user._id.toString(),
           },
-          process.env.REGISTER_TOKEN_USER,
+          REGISTER_TOKEN_USER,
         );
 
         user.registerToken = token;
@@ -200,7 +200,7 @@ export class AdminService {
         lastName: obj.lastName,
         email: obj.email,
         company: obj.company,
-        maxStudents: obj.maxStudents
+        maxStudents: obj.maxStudents,
       });
 
       const data = await newHr.save();
@@ -211,7 +211,7 @@ export class AdminService {
           email: newHr.email,
           id: newHr._id.toString(),
         },
-        process.env.REGISTER_TOKEN_USER,
+        REGISTER_TOKEN_USER,
       );
 
       newHr.registerToken = token;
@@ -239,11 +239,11 @@ export class AdminService {
     const hashPwd = await hashPassword(password);
     const admin = new this.adminModel({
       email,
-      password: hashPwd
+      password: hashPwd,
     });
     const result = await admin.save();
     return {
-      _id: result._id
+      _id: result._id,
     };
   }
 }
