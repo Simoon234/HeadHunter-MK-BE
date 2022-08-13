@@ -43,7 +43,7 @@ export class HrController {
   }
 
   @HttpCode(200)
-  @Get('/addToTalk/:id/:userId')
+  @Get('/add-to-talk/:id/:userId')
   addToTalk(
     @Param('id') id: string,
     @Param('userId') userId: string,

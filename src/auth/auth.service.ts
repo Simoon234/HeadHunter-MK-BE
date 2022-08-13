@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from 'src/schemas/user.schema';
 import { Model } from 'mongoose';
@@ -10,7 +10,7 @@ import { RegisterDto } from './dto/register.dto';
 import { hashPassword, verifyPassword } from '../utils/hashPassword';
 import { HumanResources } from 'src/schemas/hr.schema';
 import { EmailService } from '../email/email.service';
-import { PasswordResetRes, Person, Role, TokenGenerator } from '../types';
+import { Person, Role, TokenGenerator } from '../types';
 import { Admin } from '../schemas/admin.schema';
 import { resetPassword } from '../templates/email/passwordReset';
 import { sendError } from 'src/utils/sendError';
@@ -45,14 +45,8 @@ export class AuthService {
   }
 
   private static async generateToken(obj): Promise<string> {
-    let token: string;
-    let refreshToken: string;
-    const personWithTheSameToken = null;
-
-    do {
-      token = uuid();
-      refreshToken = uuid();
-    } while (!!personWithTheSameToken);
+    const token = uuid();
+    const refreshToken = uuid();
 
     obj.accessToken = token;
     obj.refreshToken = refreshToken;
@@ -96,11 +90,11 @@ export class AuthService {
     try {
       const get = await this.user.findById({ _id: id });
       if (get.registerToken === null && get.active === true) {
-        throw new Error('You already registered');
+        sendError('Jesteś już zarejestrowny');
       }
 
       if (obj.password !== obj.passwordRepeat) {
-        throw new Error('Password is not the same');
+        sendError('Hasła nie są takie same');
       }
 
       const hashPwd = await hashPassword(obj.password);
@@ -114,12 +108,11 @@ export class AuthService {
         registeredId: get._id,
         success: true,
       });
-    } catch (err) {
+    } catch (e) {
       res.json({
         success: false,
-        message: err.message,
+        message: e.message,
       });
-      console.error(err);
     }
   }
 
@@ -169,7 +162,7 @@ export class AuthService {
       const pwd = await verifyPassword(password, user.password);
 
       if (!pwd) {
-        throw new Error('Nieprawidłowe hasło');
+        sendError('Nieprawidłowe hasło');
       }
 
       const id = String(user._id);
@@ -228,11 +221,11 @@ export class AuthService {
     try {
       const get = await this.hr.findById({ _id: id });
       if (get.registerToken === null && get.active === true) {
-        throw new Error('You already registered');
+        sendError('Jesteś już zarejestrowany');
       }
 
       if (obj.password !== obj.passwordRepeat) {
-        throw new Error('Password is not the same');
+        sendError('Hasła nie są takie same');
       }
 
       const hashPwd = await hashPassword(obj.password);
@@ -246,12 +239,11 @@ export class AuthService {
         registeredId: get._id,
         success: true,
       });
-    } catch (err) {
+    } catch (e) {
       res.json({
         success: false,
-        message: err.message,
+        message: e.message,
       });
-      console.error(err);
     }
   }
 
@@ -308,73 +300,69 @@ export class AuthService {
         .json({
           success: true,
         });
-    } catch (err) {
+    } catch (e) {
       res.json({
         success: false,
+        message: e.message,
       });
     }
   }
 
-  async remindPassword(email: string): Promise<{ message: string }> {
-    const user = await this.user.findOne({ email });
+  async remindPassword(email: string, res: Response): Promise<void> {
+    try {
+      const user = await this.user.findOne({ email });
 
-    console.log(user);
+      if (!user) {
+        sendError('Brak użytkownika o podanym adresie email');
+      }
 
-    if (!user) {
-      throw new HttpException('No user found', HttpStatus.NOT_FOUND);
-    }
+      user.refreshToken = sign({ email: user.email }, REFRESH_TOKEN_REMINDER, {
+        expiresIn: '1h',
+      });
+      await user.save();
 
-    if (!user.email) {
-      throw new HttpException(
-        `No user with that: (${email}) email`,
-        HttpStatus.BAD_REQUEST,
+      await this.mailService.sendEmail(
+        user.email,
+        ADMIN_EMAIL,
+        '[NO-REPLY] Password reset',
+        resetPassword(
+          user.firstName === null ? '' : user.firstName,
+          user._id.toString(),
+          user.refreshToken,
+        ),
       );
+
+      res.json({ success: true });
+    } catch (e) {
+      res.json({ success: false, message: e.message });
     }
-
-    user.refreshToken = sign({ email: user.email }, REFRESH_TOKEN_REMINDER, {
-      expiresIn: '1h',
-    });
-    await user.save();
-
-    await this.mailService.sendEmail(
-      user.email,
-      ADMIN_EMAIL,
-      '[NO-REPLY] Password reset',
-      resetPassword(
-        user.firstName === null ? '' : user.firstName,
-        user._id.toString(),
-        user.refreshToken,
-      ),
-    );
-
-    return {
-      message: 'Check your email address.',
-    };
   }
 
   async changePassword(
     id: string,
     refreshToken: string,
     password: string,
-  ): Promise<PasswordResetRes> {
-    const users = await this.user.find({ _id: id }).exec();
-    const hr = await this.hr.find({ _id: id }).exec();
-    const admins = await this.admin.find({ _id: id }).exec();
+    res: Response,
+  ): Promise<void> {
+    try {
+      const users = await this.user.find({ _id: id }).exec();
+      const hr = await this.hr.find({ _id: id }).exec();
+      const admins = await this.admin.find({ _id: id }).exec();
 
-    const [user] = [...users, ...hr, ...admins];
+      const [user] = [...users, ...hr, ...admins];
 
-    if (!user) {
-      throw new HttpException('User not exist', HttpStatus.BAD_REQUEST);
+      if (!user) {
+        sendError('Nie ma takiego użytkownika');
+      }
+
+      user.password = await hashPassword(password);
+      user.refreshToken = null;
+      user.accessToken = null;
+      await user.save();
+
+      res.json({ success: true });
+    } catch (e) {
+      res.json({ success: false, message: e.message });
     }
-
-    user.password = await hashPassword(password);
-    user.refreshToken = null;
-    user.accessToken = null;
-    await user.save();
-
-    return {
-      success: true,
-      message: 'Password changed.',
-    };
   }
 }

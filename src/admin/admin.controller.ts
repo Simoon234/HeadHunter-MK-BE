@@ -21,7 +21,7 @@ export class AdminController {
   constructor(@Inject(AdminService) private adminService: AdminService) {}
 
   @HttpCode(200)
-  @Put('/update/:id')
+  @Put('/:id')
   update(@Param('id') id, @Body() obj: UpdateAdmin, @Res() res: Response) {
     return this.adminService.update(id, obj, res);
   }
@@ -30,19 +30,23 @@ export class AdminController {
   @HttpCode(201)
   @Post('/add/hr')
   addHr(@Body() obj: HrDto, @Res() res: Response) {
-    return this.adminService.addHumanResource(obj, res);
+    return this.adminService.addHR(obj, res);
   }
 
   @Roles(Role.ADMIN)
   @HttpCode(201)
-  @Post('/upload')
-  uploadUsers(@Body() file: AddUsersDto[], @Res() res: Response) {
-    return this.adminService.upload(file, res);
+  @Post('/add/students')
+  uploadStudents(@Body() file: AddUsersDto[], @Res() res: Response) {
+    return this.adminService.uploadStudents(file, res);
   }
 
   @HttpCode(201)
   @Post('/register')
-  register(@Body('email') email: string, @Body('password') password: string) {
-    return this.adminService.register(email, password);
+  register(
+    @Body('email') email: string,
+    @Body('password') password: string,
+    @Res() res: Response,
+  ) {
+    return this.adminService.register(email, password, res);
   }
 }

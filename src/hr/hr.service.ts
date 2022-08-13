@@ -11,6 +11,9 @@ import { HrUpdateDto } from './dto/hr-update.dto';
 import { EmailService } from '../email/email.service';
 import { checkQueryUrl } from '../utils/checkQueryUrl';
 import { ADMIN_EMAIL, TOKEN_ADDED_USER_HR } from '../../config';
+import { usersResponseAvailable } from 'src/utils/usersResponseAvailable';
+import { sendError } from '../utils/sendError';
+import { usersResponseToTalk } from 'src/utils/usersResponseToTalk';
 
 @Injectable()
 export class HrService {
@@ -101,27 +104,9 @@ export class HrService {
         (countElement - hr.users.length) / maxItemsOnPage,
       );
 
-      const usersRes = getPaginationStudents.map((item) => {
-        return {
-          id: item.id,
-          firstName: item.firstName,
-          lastName: item.lastName,
-          courseCompletion: item.courseCompletion,
-          courseEngagement: item.courseEngagement,
-          projectDegree: item.projectDegree,
-          teamProjectDegree: item.teamProjectDegree,
-          expectedTypeWork: item.expectedTypeWork,
-          expectedContractType: item.expectedContractType,
-          monthsOfCommercialExp: item.monthsOfCommercialExp,
-          targetWorkCity: item.targetWorkCity,
-          expectedSalary: item.expectedSalary,
-          canTakeApprenticeship: item.canTakeApprenticeship,
-        };
-      });
-
       res.json({
         success: true,
-        students: usersRes,
+        students: usersResponseAvailable(getPaginationStudents),
         allStudents: getAllStudents,
         pages: totalPages,
       });
@@ -145,7 +130,7 @@ export class HrService {
         addUserToTalk.status !== Status.ACTIVE ||
         addUserToTalk.active === false
       ) {
-        throw new Error('Użytkownik nie jest aktywny');
+        sendError('Użytkownik nie jest aktywny');
       }
       const token = sign({ email: addUserToTalk.email }, TOKEN_ADDED_USER_HR);
 
@@ -160,7 +145,7 @@ export class HrService {
 
       hr.users.map((item) => {
         if (item.toString() === userId) {
-          throw new Error(
+          sendError(
             'Próbujesz dodać użytkownika, który jest już dodany do twojej listy',
           );
         }
@@ -180,7 +165,6 @@ export class HrService {
     }
   }
 
-  // w parametrze przekażemy hr (req.user) i stamtąd wezmiemy id
   async usersAddedToTalkByCurrentHr(id, itemsOnPage, page, res): Promise<void> {
     try {
       let maxItemsOnPage = itemsOnPage;
@@ -200,7 +184,7 @@ export class HrService {
       const users = hr.users;
 
       if (users === null) {
-        throw new Error('Brak kursantów');
+        sendError('Brak kursantów');
       }
 
       const convertToString = users.map((item) => item.toString());
@@ -239,27 +223,9 @@ export class HrService {
 
       const totalPages = Math.round(countElement / maxItemsOnPage);
 
-      const usersRes = getStudents.map((item) => {
-        return {
-          id: item.id,
-          firstName: item.firstName,
-          lastName: item.lastName,
-          githubUsername: item.githubUsername,
-          courseCompletion: item.courseCompletion,
-          courseEngagement: item.courseEngagement,
-          projectDegree: item.projectDegree,
-          teamProjectDegree: item.teamProjectDegree,
-          expectedTypeWork: item.expectedTypeWork,
-          expectedContractType: item.expectedContractType,
-          monthsOfCommercialExp: item.monthsOfCommercialExp,
-          targetWorkCity: item.targetWorkCity,
-          expectedSalary: item.expectedSalary,
-          canTakeApprenticeship: item.canTakeApprenticeship,
-        };
-      });
       res.json({
         success: true,
-        students: usersRes,
+        students: usersResponseToTalk(getStudents),
         allStudents: usersAdded,
         pages: totalPages,
       });
@@ -303,7 +269,7 @@ export class HrService {
 
       if (obj.password) {
         if (obj.password !== obj.passwordRepeat) {
-          throw new Error('Hasła nie są takie same');
+          sendError('Hasła nie są takie same');
         }
         hashPwd = await hashPassword(obj.password);
       }
@@ -342,7 +308,7 @@ export class HrService {
       );
 
       if (!user) {
-        throw new Error('Nie znaleziono użytkownika');
+        sendError('Nie znaleziono użytkownika');
       }
 
       const allHr = await this.humanResources.find({});
@@ -608,27 +574,9 @@ export class HrService {
 
       const totalPages = Math.round(value / maxItemsOnPage);
 
-      const usersRes = getPaginationStudents.map((item) => {
-        return {
-          id: item.id,
-          firstName: item.firstName,
-          lastName: item.lastName,
-          courseCompletion: item.courseCompletion,
-          courseEngagement: item.courseEngagement,
-          projectDegree: item.projectDegree,
-          teamProjectDegree: item.teamProjectDegree,
-          expectedTypeWork: item.expectedTypeWork,
-          expectedContractType: item.expectedContractType,
-          monthsOfCommercialExp: item.monthsOfCommercialExp,
-          targetWorkCity: item.targetWorkCity,
-          expectedSalary: item.expectedSalary,
-          canTakeApprenticeship: item.canTakeApprenticeship,
-        };
-      });
-
       res.json({
         success: true,
-        students: usersRes,
+        students: usersResponseAvailable(getPaginationStudents),
         allStudents: getAllStudents,
         pages: totalPages,
       });
@@ -673,7 +621,7 @@ export class HrService {
       const users = hr.users;
 
       if (users === null) {
-        throw new Error('Brak kursantów');
+        sendError('Brak kursantów');
       }
 
       const convertToString = users.map((item) => item.toString());
@@ -819,28 +767,9 @@ export class HrService {
 
       const totalPages = Math.round(countElement / maxItemsOnPage);
 
-      const usersRes = getStudents.map((item) => {
-        return {
-          id: item.id,
-          firstName: item.firstName,
-          lastName: item.lastName,
-          githubUsername: item.githubUsername,
-          courseCompletion: item.courseCompletion,
-          courseEngagement: item.courseEngagement,
-          projectDegree: item.projectDegree,
-          teamProjectDegree: item.teamProjectDegree,
-          expectedTypeWork: item.expectedTypeWork,
-          expectedContractType: item.expectedContractType,
-          monthsOfCommercialExp: item.monthsOfCommercialExp,
-          targetWorkCity: item.targetWorkCity,
-          expectedSalary: item.expectedSalary,
-          canTakeApprenticeship: item.canTakeApprenticeship,
-        };
-      });
-
       res.json({
         success: true,
-        students: usersRes,
+        students: usersResponseToTalk(getStudents),
         allStudents: usersAdded,
         pages: totalPages,
       });

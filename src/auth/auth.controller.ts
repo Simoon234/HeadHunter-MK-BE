@@ -15,7 +15,7 @@ import { RegisterDto } from './dto/register.dto';
 import { Response } from 'express';
 import { JwtAuthGuard } from './guards/jwt.guard';
 import { ObjectPerson } from '../decorators/object.decorator';
-import { PasswordResetRes, Person } from '../types';
+import { Person } from '../types';
 
 @Controller('/auth')
 export class AuthController {
@@ -67,8 +67,11 @@ export class AuthController {
 
   @HttpCode(201)
   @Post('/reset-password')
-  resetPassword(@Body('email') email: string): Promise<{ message: string }> {
-    return this.authService.remindPassword(email);
+  resetPassword(
+    @Body('email') email: string,
+    @Res() res: Response,
+  ): Promise<void> {
+    return this.authService.remindPassword(email, res);
   }
 
   @HttpCode(201)
@@ -77,7 +80,8 @@ export class AuthController {
     @Param('id') id: string,
     @Param('refreshToken') refreshToken: string,
     @Body('password') password: string,
-  ): Promise<PasswordResetRes> {
-    return this.authService.changePassword(id, refreshToken, password);
+    @Res() res: Response,
+  ): Promise<void> {
+    return this.authService.changePassword(id, refreshToken, password, res);
   }
 }

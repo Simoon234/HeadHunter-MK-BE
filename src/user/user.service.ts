@@ -63,7 +63,6 @@ export class UserService {
     }
   }
 
-  //Update
   async updateUserAfterLogin(
     id: string,
     res: Response,
@@ -110,7 +109,6 @@ export class UserService {
         hashPwd = await hashPassword(password);
       }
 
-      //UPDATE USER
       const updatedUser = await this.userModel.findOneAndUpdate(
         { _id: id },
         {
@@ -173,7 +171,6 @@ export class UserService {
     }
   }
 
-  //AVATAR URL SCHEMA CREATE!
   async getSingleUserCV(id: string, res: Response): Promise<void> {
     try {
       const user = await this.userModel.findOne({ _id: id });
@@ -187,42 +184,25 @@ export class UserService {
         user,
       });
     } catch (e) {
-      if (e) {
-        res.json({
-          success: false,
-          message: e.message,
-        });
-      }
-      console.error(e);
+      res.json({
+        success: false,
+        message: e.message,
+      });
     }
   }
 
   async deleteAccount(id: string, res: Response): Promise<void> {
     try {
-      let message: string;
-      let success: boolean;
-      const user = await this.userModel.deleteOne({ _id: id });
+      await this.userModel.deleteOne({ _id: id });
 
-      if (user.deletedCount <= 0) {
-        message = 'Użytkownik o podanym ID nie istnieje';
-        success = true;
-      } else {
-        message = 'Użytkownik został usunięty';
-        success = false;
-      }
-
-      res.status(204).json({
-        message,
-        success,
+      res.json({
+        success: true,
       });
     } catch (e) {
-      if (e) {
-        res.status(400);
-        res.json({
-          message: 'Invalid id',
-          status: false,
-        });
-      }
+      res.json({
+        message: e.message,
+        status: false,
+      });
     }
   }
 }

@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Response } from 'express';
@@ -15,6 +15,7 @@ import { AddUsersDto } from './dto/add-users.dto';
 import { ObjectId } from 'mongodb';
 import { registerHr, registerUser } from '../templates/email/registration';
 import { ADMIN_EMAIL, REGISTER_TOKEN_USER } from '../../config';
+import { sendError } from '../utils/sendError';
 
 @Injectable()
 export class AdminService {
@@ -25,25 +26,6 @@ export class AdminService {
     @InjectModel(HumanResources.name)
     private humanResources: Model<HumanResources>,
   ) {}
-
-  private static filterMethod(obj) {
-    const {
-      email,
-      courseCompletion,
-      courseEngagment,
-      projectDegree,
-      teamProjectDegree,
-      bonusProjectUrls,
-    } = obj;
-    return {
-      email,
-      courseCompletion,
-      courseEngagment,
-      projectDegree,
-      teamProjectDegree,
-      bonusProjectUrls,
-    };
-  }
 
   async createTokenAndSendEmail(role: Role, payload: Payload, secret: string) {
     const token = sign({ email: payload.email, id: payload.id }, secret, {
@@ -69,11 +51,8 @@ export class AdminService {
         );
       }
     } else {
-      throw new HttpException(
-        'You had 7 days for registration. Token expired. Please contact - ' +
-          ADMIN_EMAIL,
-        HttpStatus.FORBIDDEN,
-      );
+      sendError(`You had 7 days for registration. Token expired. Please contact - ' +
+          ${ADMIN_EMAIL}`);
     }
 
     return {
@@ -83,7 +62,7 @@ export class AdminService {
     };
   }
 
-  async upload(file: AddUsersDto[], res: Response): Promise<void> {
+  async uploadStudents(file: AddUsersDto[], res: Response) {
     try {
       const getAllUsers = await this.userModel.find({}).exec();
       const newUsers = [];
@@ -152,12 +131,12 @@ export class AdminService {
     }
   }
 
-  async update(id: string, obj: UpdateAdmin, res: Response): Promise<void> {
+  async update(id: string, obj: UpdateAdmin, res: Response) {
     try {
-      let objToSave = {};
+      let objToSave;
       if (obj.password) {
         if (obj.password !== obj.passwordRepeat) {
-          throw new Error('Podane hasła nie są takie same');
+          sendError('Podane hasła nie są takie same');
         }
 
         const hashedPwd = await hashPassword(obj.password);
@@ -191,9 +170,7 @@ export class AdminService {
     }
   }
 
-  //
-  //HR form
-  async addHumanResource(obj: HrDto, res: Response): Promise<void> {
+  async addHR(obj: HrDto, res: Response) {
     try {
       const newHr = new this.humanResources({
         firstName: obj.firstName,
@@ -224,26 +201,24 @@ export class AdminService {
         },
       });
     } catch (e) {
-      if (e.code === 11000) {
-        res.json({
-          message: 'Email exist. Please try again.',
-          success: false,
-        });
-      }
-      console.error(e.message);
+      res.json({
+        message: e.message,
+        success: false,
+      });
     }
   }
 
-  // first Registration
-  async register(email: string, password: string): Promise<{ _id: string }> {
-    const hashPwd = await hashPassword(password);
-    const admin = new this.adminModel({
-      email,
-      password: hashPwd,
-    });
-    const result = await admin.save();
-    return {
-      _id: result._id,
-    };
+  async register(email: string, password: string, res: Response) {
+    try {
+      const hashPwd = await hashPassword(password);
+      const admin = new this.adminModel({
+        email,
+        password: hashPwd,
+      });
+      const result = await admin.save();
+      res.json({ success: true, id: result._id });
+    } catch (e) {
+      res.json({ success: false, message: e.message });
+    }
   }
 }
