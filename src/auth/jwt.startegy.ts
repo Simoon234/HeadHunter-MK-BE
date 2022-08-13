@@ -6,7 +6,7 @@ import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { HumanResources } from '../schemas/hr.schema';
 import { Admin } from 'src/schemas/admin.schema';
-import { LOG_TOKEN } from 'config';
+import { LOG_TOKEN } from 'src/config';
 
 function cookieExtract(req: any): null | string {
   return req && req.cookies ? req.cookies?.jwt ?? null : null;

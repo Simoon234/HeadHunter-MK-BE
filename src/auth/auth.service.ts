@@ -13,8 +13,8 @@ import { EmailService } from '../email/email.service';
 import { Person, Role, TokenGenerator } from '../types';
 import { Admin } from '../schemas/admin.schema';
 import { resetPassword } from '../templates/email/passwordReset';
-import { sendError } from 'src/utils/sendError';
-import { ADMIN_EMAIL, LOG_TOKEN, REFRESH_TOKEN_REMINDER } from 'config';
+import { sendError } from '../utils/sendError';
+import { ADMIN_EMAIL, LOG_TOKEN, REFRESH_TOKEN_REMINDER } from '../config';
 
 @Injectable()
 export class AuthService {

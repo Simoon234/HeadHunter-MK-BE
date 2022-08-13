@@ -10,7 +10,7 @@ import { hashPassword } from '../utils/hashPassword';
 import { HrUpdateDto } from './dto/hr-update.dto';
 import { EmailService } from '../email/email.service';
 import { checkQueryUrl } from '../utils/checkQueryUrl';
-import { ADMIN_EMAIL, TOKEN_ADDED_USER_HR } from '../../config';
+import { ADMIN_EMAIL, TOKEN_ADDED_USER_HR } from '../config';
 import { usersResponseAvailable } from 'src/utils/usersResponseAvailable';
 import { sendError } from '../utils/sendError';
 import { usersResponseToTalk } from 'src/utils/usersResponseToTalk';
@@ -123,6 +123,12 @@ export class HrService {
       const hr = await this.humanResources.findById({
         _id: id,
       });
+
+      if (hr.maxStudents <= hr.users.length) {
+        sendError(
+          `Maksymalna liczba kursantów w panelu "Do rozmowy" nie może być większa od ${hr.maxStudents}`,
+        );
+      }
 
       const addUserToTalk = await this.user.findOne({ _id: userId });
 

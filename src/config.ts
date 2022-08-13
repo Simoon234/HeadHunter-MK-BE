@@ -1,10 +1,12 @@
+import 'dotenv/config';
+
 export const ACTIVATION_HR_URL = 'http://localhost:3000/activation/hr';
 export const ACTIVATION_STUDENT_URL =
   'http://localhost:3000/activation/student';
 export const TOKEN_ADDED_USER_HR =
   process.env.TOKEN_ADDED_USER_HR || 'Random string';
 export const CONNECTION_DB =
-  process.env.CONNECTION_DB || 'mongodb://localhost:27017';
+  process.env.CONNECTION_DB || 'mongodb://localhost:2701f7';
 export const REGISTER_TOKEN_USER =
   process.env.REGISTER_TOKEN_USER || 'Random string';
 export const LOG_TOKEN = process.env.LOG_TOKEN || 'Random string';

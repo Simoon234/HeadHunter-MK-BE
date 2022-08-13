@@ -9,7 +9,7 @@ import { EmailService } from '../email/email.service';
 import { hashPassword } from '../utils/hashPassword';
 import { HumanResources } from '../schemas/hr.schema';
 import { sendError } from '../utils/sendError';
-import { ADMIN_EMAIL } from 'config';
+import { ADMIN_EMAIL } from 'src/config';
 
 @Injectable()
 export class UserService {

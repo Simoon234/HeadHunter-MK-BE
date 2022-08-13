@@ -14,7 +14,7 @@ import { UpdateAdmin } from './dto/update-admin.dto';
 import { AddUsersDto } from './dto/add-users.dto';
 import { ObjectId } from 'mongodb';
 import { registerHr, registerUser } from '../templates/email/registration';
-import { ADMIN_EMAIL, REGISTER_TOKEN_USER } from '../../config';
+import { ADMIN_EMAIL, REGISTER_TOKEN_USER } from '../config';
 import { sendError } from '../utils/sendError';
 
 @Injectable()

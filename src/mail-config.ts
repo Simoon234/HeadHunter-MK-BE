@@ -1,4 +1,4 @@
-import { MAIL_HOST, MAIL_PASS, MAIL_USER } from '../config';
+import { MAIL_HOST, MAIL_PASS, MAIL_USER } from './config';
 
 export const config = {
   transport: {
