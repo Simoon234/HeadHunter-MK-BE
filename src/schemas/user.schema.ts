@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-import { Apprentice, ContractType, Status, WorkType } from '../types';
+import { Apprentice, ContractType, Role, Status, WorkType } from '../types';
 
 export type UserDocument = User & Document;
 
@@ -8,10 +8,13 @@ export type UserDocument = User & Document;
 export class User {
   @Prop({
     type: String,
-    required: true,
-    unique: true,
   })
   email: string;
+
+  @Prop({
+    type: String,
+  })
+  password: string;
 
   @Prop({
     type: Number,
@@ -28,7 +31,7 @@ export class User {
     min: 0,
     max: 5,
   })
-  courseEngagment: number;
+  courseEngagement: number;
 
   @Prop({
     type: Number,
@@ -53,29 +56,29 @@ export class User {
     required: true,
     default: [],
   })
-  bonusProjectUrls: string[];
+  projectUrls: string[];
 
   @Prop({
-    type: Number,
-    default: null,
+    type: String,
+    default: '',
   })
   tel: number;
 
   @Prop({
     type: String,
-    default: null,
+    default: '',
   })
   firstName: string;
 
   @Prop({
     type: String,
-    default: null,
+    default: '',
   })
   lastName: string;
 
   @Prop({
     type: String,
-    default: null,
+    default: '',
   })
   githubUsername: string;
 
@@ -86,13 +89,8 @@ export class User {
   portfolioUrls: string[];
 
   @Prop({
-    default: [],
-    type: Array,
-  })
-  projectUrls: string[];
-
-  @Prop({
     type: String,
+    default: '',
   })
   bio: string;
 
@@ -105,7 +103,7 @@ export class User {
 
   @Prop({
     type: String,
-    default: null,
+    default: '',
   })
   targetWorkCity: string;
 
@@ -123,7 +121,7 @@ export class User {
   expectedSalary: number;
 
   @Prop({
-    type: String,
+    type: Number,
     enum: Apprentice,
     default: Apprentice.NO,
   })
@@ -131,36 +129,33 @@ export class User {
 
   @Prop({
     type: Number,
-    default: null,
+    default: 0,
   })
   monthsOfCommercialExp: number;
 
   @Prop({
+    default: '',
     type: String,
   })
   education: string;
 
   @Prop({
+    default: '',
     type: String,
   })
   workExperience: string;
 
   @Prop({
+    default: '',
     type: String,
   })
   courses: string;
 
   @Prop({
-    type: String,
-    default: null,
-  })
-  token: string;
-
-  @Prop({
     type: Boolean,
-    default: 0,
+    default: false,
   })
-  active: number;
+  active: boolean;
 
   @Prop({
     type: String,
@@ -171,13 +166,54 @@ export class User {
 
   @Prop({
     type: String,
-    default:
-      'https://www.deviantart.com/karmaanddestiny/art/Default-user-icon-4-858661084',
+    default: null,
   })
-  avatarUrl: string;
-}
+  registerToken: string;
 
-//api for user if exist.
-// https://api.github.com/users/{username}
+  @Prop({
+    type: String,
+    default: null,
+    nullable: true,
+  })
+  accessToken: string;
+
+  @Prop({
+    type: String,
+    default: null,
+    nullable: true,
+  })
+  refreshToken: string;
+
+  @Prop({
+    type: String,
+    default: Role.STUDENT,
+    enum: Role,
+  })
+  role: Role.STUDENT;
+
+  @Prop({
+    default: null,
+    type: String,
+  })
+  addedByHr: string;
+
+  @Prop({
+    default: [],
+    type: Array,
+  })
+  scrumUrls: string[];
+
+  @Prop({
+    default: true,
+    type: Boolean,
+  })
+  firstLogin: boolean;
+
+  @Prop({
+    default: [],
+    type: Array,
+  })
+  bonusProjectUrls: string[];
+}
 
 export const UserSchema = SchemaFactory.createForClass(User);

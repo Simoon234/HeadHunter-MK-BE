@@ -1,6 +1,6 @@
 import { IsDefined, IsString } from 'class-validator';
 
-export class HrRegisterDto {
+export class RegisterDto {
   @IsString()
   @IsDefined()
   password: string;

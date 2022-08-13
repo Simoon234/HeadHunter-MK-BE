@@ -1,18 +1,23 @@
-import { IsArray, IsBoolean, IsEnum, IsInt, IsString } from 'class-validator';
-import { ContractType, WorkType } from '../../types';
+import { IsArray, IsNumber, IsString } from 'class-validator';
 
 export class UserUpdateDto {
   @IsString()
   email: string;
 
-  @IsInt()
-  tel: number;
+  @IsString()
+  tel: string;
 
   @IsString()
-  firstname: string;
+  firstName: string;
 
   @IsString()
-  lastname: string;
+  password: string;
+
+  @IsString()
+  passwordRepeat: string;
+
+  @IsString()
+  lastName: string;
 
   @IsString()
   githubUsername: string;
@@ -23,25 +28,28 @@ export class UserUpdateDto {
   @IsArray()
   projectUrls: string[];
 
+  @IsArray()
+  scrumUrls: string[];
+
   @IsString()
   bio: string;
 
-  @IsEnum(WorkType)
-  expectedTypeWork: WorkType;
+  @IsString()
+  expectedTypeWork: string;
 
   @IsString()
   targetWorkCity: string;
 
-  @IsEnum(ContractType)
-  expectedContractType: ContractType;
-
   @IsString()
-  expectedSalary: string | number;
+  expectedContractType: string;
 
-  @IsBoolean()
-  canTakeApprenticeship: boolean;
+  @IsNumber()
+  expectedSalary: number;
 
-  @IsInt()
+  @IsNumber()
+  canTakeApprenticeship: number;
+
+  @IsNumber()
   monthsOfCommercialExp: number;
 
   @IsString()
@@ -52,6 +60,4 @@ export class UserUpdateDto {
 
   @IsString()
   courses: string;
-
-  avatarUrl: string;
 }

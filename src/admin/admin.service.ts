@@ -1,17 +1,21 @@
-import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Response } from 'express';
 import { EmailService } from '../email/email.service';
 import { sign, verify } from 'jsonwebtoken';
-import { compare } from 'bcrypt';
 import { HrDto } from '../hr/dto/hr.dto';
 import { hashPassword } from '../utils/hashPassword';
-import { ChangePasswordInterface } from '../types';
+import { Payload, Role } from '../types';
 import { HumanResources } from '../schemas/hr.schema';
 import { User, UserDocument } from '../schemas/user.schema';
 import { Admin, AdminDocument } from '../schemas/admin.schema';
-import { ChangePassword } from './dto/changePassword.dto';
+import { UpdateAdmin } from './dto/update-admin.dto';
+import { AddUsersDto } from './dto/add-users.dto';
+import { ObjectId } from 'mongodb';
+import { registerHr, registerUser } from '../templates/email/registration';
+import { ADMIN_EMAIL, REGISTER_TOKEN_USER } from '../../config';
+import { sendError } from '../utils/sendError';
 
 @Injectable()
 export class AdminService {
@@ -23,159 +27,198 @@ export class AdminService {
     private humanResources: Model<HumanResources>,
   ) {}
 
-  private static verifyPassword(password: string, storedPassword: string) {
-    return compare(password, storedPassword);
-  }
+  async createTokenAndSendEmail(role: Role, payload: Payload, secret: string) {
+    const token = sign({ email: payload.email, id: payload.id }, secret, {
+      expiresIn: '7d',
+    });
 
-  async changePassword(
-    email: string,
-    obj: ChangePassword,
-  ): Promise<ChangePasswordInterface> {
-    if (obj.password !== obj.passwordRepeat) {
-      throw new HttpException(
-        'Password are not the same.',
-        HttpStatus.BAD_REQUEST,
-      );
+    const checkTokenValid = verify(token, secret);
+    if (checkTokenValid) {
+      if (role === Role.HR) {
+        await this.emailService.sendEmail(
+          payload.email,
+          ADMIN_EMAIL,
+          '[MegaK HeadHunters] Register',
+          registerHr(payload.id, token),
+        );
+      }
+      if (role === Role.STUDENT) {
+        await this.emailService.sendEmail(
+          payload.email,
+          ADMIN_EMAIL,
+          '[MegaK HeadHunters] Register',
+          registerUser(payload.id, token),
+        );
+      }
+    } else {
+      sendError(`You had 7 days for registration. Token expired. Please contact - ' +
+          ${ADMIN_EMAIL}`);
     }
-    const hashedPwd = await hashPassword(obj.password);
-    const admin = await this.adminModel.findOneAndUpdate(
-      { email },
-      {
-        $set: {
-          password: hashedPwd,
-        },
-      },
-    );
 
     return {
-      email: admin.email,
-      message: 'Successfully updated',
+      payload,
+      secret,
+      token,
     };
   }
 
-  async upload(file: any, res: Response) {
+  async uploadStudents(file: AddUsersDto[], res: Response) {
     try {
-      if (file.mimetype !== 'application/json') {
-        return res.json({
-          message: 'Sorry, we only accept JSON files.',
-        });
-      }
-      const convertFile = file.buffer.toString();
-      const parsedObject = JSON.parse(convertFile);
+      const getAllUsers = await this.userModel.find({}).exec();
+      const newUsers = [];
 
-      parsedObject.map((obj) => {
-        if (!obj.email.includes('@')) {
-          res.json({
-            message: `Sorry, we only accept valid email addresses. (${obj.email}) (missing '@')`,
-          });
-          throw new Error(`[${obj.email}] does not have @`);
+      file.map((obj) => {
+        const { email } = obj;
+        if (!email) {
+          return;
         }
+
+        if (
+          !email.includes('@') ||
+          !!newUsers.find((user) => user.email === email)
+        ) {
+          return;
+        }
+
+        newUsers.push(obj);
       });
 
-      const users = await this.userModel.insertMany(parsedObject);
-
-      for (const user of users) {
-        const token = sign({ email: user.email }, 'x21j2uh3y1231231', {
-          expiresIn: '24h',
-        });
-
-        const checkTokenValid = verify(token, 'x21j2uh3y1231231');
-
-        if (checkTokenValid) {
-          await this.emailService.sendEmail(
-            user.email,
-            'Register',
-            `Link do aktywacji...`,
-          );
-        } else {
-          throw new Error('Token is not valid more');
+      newUsers.map(async (newUser) => {
+        if (!!getAllUsers.find((user) => user.email === newUser.email)) {
+          return;
         }
-      }
+
+        if (newUser.courseCompletion < 0 || newUser.courseCompletion > 5) {
+          newUser.courseCompletion = 0;
+        }
+        if (newUser.courseEngagement < 0 || newUser.courseEngagement > 5) {
+          newUser.courseEngagement = 0;
+        }
+        if (newUser.projectDegree < 0 || newUser.projectDegree > 5) {
+          newUser.projectDegree = 0;
+        }
+        if (newUser.teamProjectDegree < 0 || newUser.teamProjectDegree > 5) {
+          newUser.teamProjectDegree = 0;
+        }
+
+        const user = new this.userModel(newUser);
+
+        const { token } = await this.createTokenAndSendEmail(
+          Role.STUDENT,
+          {
+            email: user.email,
+            id: user._id.toString(),
+          },
+          REGISTER_TOKEN_USER,
+        );
+
+        user.registerToken = token;
+
+        await user.save();
+      });
 
       res.json({
-        users,
         success: true,
       });
-    } catch (e) {
-      if (e.code === 11000) {
+    } catch ({ code, message, result }) {
+      if (code === 11000) {
         res.json({
-          message: e.message,
           success: false,
+          code,
         });
+        console.error(message);
       }
-      console.error(e.message);
     }
   }
 
-  // first Registration
-  async register(email: string, password: string) {
-    const hashPwd = await hashPassword(password);
-    const admin = new this.adminModel({
-      email,
-      password: hashPwd,
-    });
-    const result = await admin.save();
-    return {
-      _id: result._id,
-    };
-  }
+  async update(id: string, obj: UpdateAdmin, res: Response) {
+    try {
+      let objToSave;
+      if (obj.password) {
+        if (obj.password !== obj.passwordRepeat) {
+          sendError('Podane hasła nie są takie same');
+        }
 
-  // log admin -> zmienić DAĆ DO AUTH
-  async login(email: string, password: string) {
-    const admin = await this.adminModel.findOne({
-      email,
-    });
+        const hashedPwd = await hashPassword(obj.password);
+        objToSave = {
+          password: hashedPwd,
+          email: obj.email,
+        };
+      } else {
+        objToSave = {
+          email: obj.email,
+        };
+      }
 
-    console.log(admin);
+      await this.adminModel.findOneAndUpdate(
+        { _id: new ObjectId(id) },
+        {
+          $set: {
+            ...objToSave,
+          },
+        },
+      );
 
-    if (!admin) {
-      throw new Error('Admin not found');
-    }
-
-    const checkPassword = await AdminService.verifyPassword(
-      password,
-      admin.password,
-    );
-
-    if (checkPassword === false) {
-      throw new Error('Password is incorrect');
-    }
-
-    if (admin && checkPassword) {
-      admin.token = sign({ email: admin.email }, '12j3hg12u3123ug1y26312ui3');
-      return {
-        id: admin._id,
-        email: admin.email,
-      };
+      res.json({
+        success: true,
+        message: 'Successfully updated',
+      });
+    } catch {
+      res.json({
+        success: false,
+      });
     }
   }
 
-  //HR form
-  async addHumanResource(obj: HrDto, res: Response) {
+  async addHR(obj: HrDto, res: Response) {
     try {
       const newHr = new this.humanResources({
-        name: obj.name,
-        lastName: obj.lastname,
+        firstName: obj.firstName,
+        lastName: obj.lastName,
         email: obj.email,
         company: obj.company,
-        maxReservedStudents: obj.maxReservedStudents,
+        maxStudents: obj.maxStudents,
       });
+
       const data = await newHr.save();
 
-      //WYSŁAĆ MAILA
+      const { token } = await this.createTokenAndSendEmail(
+        Role.HR,
+        {
+          email: newHr.email,
+          id: newHr._id.toString(),
+        },
+        REGISTER_TOKEN_USER,
+      );
 
-      return res.json({
-        id: data._id,
-        email: data.email,
+      newHr.registerToken = token;
+      await newHr.save();
+      res.json({
+        success: true,
+        user: {
+          id: data._id,
+          email: data.email,
+        },
       });
     } catch (e) {
-      if (e.code === 11000) {
-        res.json({
-          message: e.message,
-          success: false,
-        });
-      }
-      console.error(e.message);
+      res.json({
+        message: e.message,
+        success: false,
+      });
+    }
+  }
+
+  async register(email: string, password: string, res: Response) {
+    try {
+      const hashPwd = await hashPassword(password);
+      const admin = new this.adminModel({
+        email,
+        password: hashPwd,
+      });
+      const result = await admin.save();
+      res.json({ success: true, id: result._id });
+    } catch (e) {
+      res.json({ success: false, message: e.message });
     }
   }
 }

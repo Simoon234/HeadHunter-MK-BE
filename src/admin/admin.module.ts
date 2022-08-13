@@ -6,6 +6,7 @@ import { EmailModule } from '../email/email.module';
 import { Admin, AdminSchema } from '../schemas/admin.schema';
 import { User, UserSchema } from '../schemas/user.schema';
 import { HrSchema, HumanResources } from '../schemas/hr.schema';
+import { JwtStr } from '../auth/jwt.startegy';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { HrSchema, HumanResources } from '../schemas/hr.schema';
     EmailModule,
   ],
   controllers: [AdminController],
-  providers: [AdminService],
+  providers: [AdminService, JwtStr],
+  exports: [JwtStr],
 })
 export class AdminModule {}

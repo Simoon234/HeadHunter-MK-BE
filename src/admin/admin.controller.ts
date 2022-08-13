@@ -7,48 +7,46 @@ import {
   Post,
   Put,
   Res,
-  UploadedFile,
-  UseInterceptors,
 } from '@nestjs/common';
 import { AdminService } from './admin.service';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import { HrDto } from '../hr/dto/hr.dto';
-import { ChangePassword } from './dto/changePassword.dto';
+import { UpdateAdmin } from './dto/update-admin.dto';
+import { Roles } from '../decorators/roles.decorator';
+import { AddUsersDto } from './dto/add-users.dto';
+import { Role } from '../types';
 
 @Controller('/admin')
 export class AdminController {
   constructor(@Inject(AdminService) private adminService: AdminService) {}
 
   @HttpCode(200)
-  @Put('/changePassword/:email')
-  changePassword(@Param('email') email, @Body() obj: ChangePassword) {
-    return this.adminService.changePassword(email, obj);
+  @Put('/:id')
+  update(@Param('id') id, @Body() obj: UpdateAdmin, @Res() res: Response) {
+    return this.adminService.update(id, obj, res);
   }
 
+  @Roles(Role.ADMIN)
   @HttpCode(201)
   @Post('/add/hr')
   addHr(@Body() obj: HrDto, @Res() res: Response) {
-    return this.adminService.addHumanResource(obj, res);
+    return this.adminService.addHR(obj, res);
   }
 
+  @Roles(Role.ADMIN)
   @HttpCode(201)
-  @Post('/upload')
-  @UseInterceptors(FileInterceptor('file'))
-  uploadUsers(@UploadedFile() file: Express.Multer.File, @Res() res: Response) {
-    return this.adminService.upload(file, res);
+  @Post('/add/students')
+  uploadStudents(@Body() file: AddUsersDto[], @Res() res: Response) {
+    return this.adminService.uploadStudents(file, res);
   }
 
-  // first admin generate, later delete this.
   @HttpCode(201)
   @Post('/register')
-  register(@Body('email') email: string, @Body('password') password: string) {
-    return this.adminService.register(email, password);
-  }
-
-  @HttpCode(201)
-  @Post('/login')
-  logAdmin(@Body('email') email: string, @Body('password') password: string) {
-    return this.adminService.login(email, password);
+  register(
+    @Body('email') email: string,
+    @Body('password') password: string,
+    @Res() res: Response,
+  ) {
+    return this.adminService.register(email, password, res);
   }
 }

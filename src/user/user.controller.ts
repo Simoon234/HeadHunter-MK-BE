@@ -2,45 +2,54 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   Inject,
   Param,
   Patch,
-  Query,
   Res,
 } from '@nestjs/common';
 import { UserService } from './user.service';
+import { Response } from 'express';
 import { UserUpdateDto } from './dto/user.update.dto';
-import { UserFilterInterface } from '../types';
+import { Roles } from '../decorators/roles.decorator';
+import { Role } from '../types';
 
 @Controller('/user')
 export class UserController {
   constructor(@Inject(UserService) private userService: UserService) {}
 
-  @Get('/all/active/:itemsOnPage/:page')
-  getAllActiveUsers(
-    @Param('itemsOnPage') itemsOnPage: number,
-    @Param('page') page: number,
-  ) {
-    return this.userService.getAllActiveUsers(itemsOnPage, page);
-  }
-
+  @HttpCode(200)
+  @Roles(Role.STUDENT || Role.HR)
   @Get('/details/:id')
-  getSingleUserCV(@Param('id') id: string, @Res() res: any) {
+  getSingleUserCV(
+    @Param('id') id: string,
+    @Res() res: Response,
+  ): Promise<void> {
     return this.userService.getSingleUserCV(id, res);
   }
 
+  @Roles(Role.STUDENT)
+  @HttpCode(200)
   @Get('/hired/:id')
-  userGotJob(@Param('id') id: string) {
-    return this.userService.userFoundJob(id);
+  userGotJob(@Param('id') id: string, @Res() res: Response): Promise<void> {
+    return this.userService.userFoundJob(id, res);
   }
 
+  @Roles(Role.STUDENT)
+  @HttpCode(204)
   @Patch('/update/:id')
-  updateUser(@Param('id') id: string, @Body() user: UserUpdateDto) {
-    return this.userService.updateUserAfterLogin(id, user);
+  updateUser(
+    @Param('id') id: string,
+    @Res() res: Response,
+    @Body() user: UserUpdateDto,
+  ): Promise<void> {
+    return this.userService.updateUserAfterLogin(id, res, user);
   }
 
-  @Get('/filter')
-  filterData(@Query() query: UserFilterInterface) {
-    return this.userService.filterUsers(query);
+  @Roles(Role.STUDENT || Role.HR)
+  @HttpCode(205)
+  @Get('/delete-account/:id')
+  deleteAccount(@Param('id') id: string, @Res() res: Response) {
+    return this.userService.deleteAccount(id, res);
   }
 }

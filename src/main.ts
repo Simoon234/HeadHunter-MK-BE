@@ -3,12 +3,13 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
 import * as cookie from 'cookie-parser';
+import { HOST, PORT } from 'config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.enableCors({
-    origin: 'http://localhost:3000',
+    origin: HOST,
     credentials: true,
   });
 
@@ -26,6 +27,7 @@ async function bootstrap() {
   app.use(helmet());
   app.use(cookie());
 
-  await app.listen(3001);
+  await app.listen(PORT);
 }
+
 bootstrap();

@@ -1,5 +1,3 @@
-import { User } from '../schemas/user.schema';
-
 export enum WorkType {
   STAY = 'Na miejscu',
   MOVE = 'Gotowość do przeprowadzki',
@@ -12,13 +10,21 @@ export enum ContractType {
   UOP = 'UOP',
   B2B = 'B2B',
   UZ = 'UZ',
-  UoD = 'UoD',
+  UOD = 'UoD',
   WHATEVER = 'Brak preferencji',
 }
 
+export enum Grade {
+  ONE = '1',
+  TWO = '2',
+  THREE = '3',
+  FOUR = '4',
+  FIVE = '5',
+}
+
 export enum Apprentice {
-  YES = 'Tak',
-  NO = 'Nie',
+  YES,
+  NO,
 }
 
 export enum Status {
@@ -30,36 +36,44 @@ export enum Status {
 // Interfaces
 
 export interface HrInterfaces {
-  name: string;
-  lastname: string;
+  firstName: string;
+  lastName: string;
   email: string;
   company: string;
-  maxReservedStudents: number;
 }
 
-export interface ReturnedUsersValuesInterfaces {
-  users: User[];
-  pages: number;
+export interface Payload {
+  email: string;
+  id: string;
 }
 
-export interface SuccessfullyUpdatedUsersInterfaces {
-  success: boolean;
-  text: string;
+export enum Role {
+  ADMIN = 'admin',
+  STUDENT = 'student',
+  HR = 'hr',
 }
 
-export interface UserFilterInterface {
+export interface AddStudentInterface {
+  email: string;
   courseCompletion: number;
-  courseEngagment: number;
+  courseEngagement: number;
   projectDegree: number;
   teamProjectDegree: number;
-  expectedTypeWork: WorkType;
-  expectedContractType: ContractType;
-  expectedSalary: number;
-  canTakeApprenticeship: boolean;
-  monthsOfCommercialExp: number;
+  bonusProjectUrls: string[];
 }
 
-export interface ChangePasswordInterface {
+export interface Person {
+  id: string;
+  accessToken: string;
+  role: Role;
+}
+
+export interface PasswordResetRes {
+  success: boolean;
   message: string;
-  email: string;
+}
+
+export interface TokenGenerator {
+  accessToken: string;
+  expiresIn: number;
 }

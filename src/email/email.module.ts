@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { EmailService } from './email.service';
 import { MailerModule } from '@nestjs-modules/mailer';
-import mailConfig = require('../mailconfig');
+import { config } from '../mail-config';
 
 @Module({
-  imports: [MailerModule.forRoot(mailConfig)],
+  imports: [MailerModule.forRoot(config)],
   providers: [EmailService],
   exports: [EmailService],
 })
