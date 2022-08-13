@@ -262,7 +262,7 @@ export class HrService {
     }
   }
 
-  async update(id: string, obj: HrUpdateDto, res: Response): Promise<void> {
+  async update(id: string, obj: HrUpdateDto, res: Response) {
     try {
       const findUser = await this.humanResources.findOne({ _id: id });
       let hashPwd = '';
@@ -282,7 +282,7 @@ export class HrService {
 
       await findUser.save();
 
-      res.json({
+      await res.json({
         success: true,
         user: {
           id: id,
@@ -293,6 +293,7 @@ export class HrService {
         },
       });
     } catch (e) {
+      console.log(e)
       res.json({
         success: false,
         message: e.message,

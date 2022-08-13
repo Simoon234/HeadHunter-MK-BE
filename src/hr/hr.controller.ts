@@ -52,7 +52,6 @@ export class HrController {
     return this.hr.addToTalk(id, userId, res);
   }
 
-  @HttpCode(204)
   @Put('/update/:id')
   update(
     @Param('id') id,

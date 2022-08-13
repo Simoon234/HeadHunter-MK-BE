@@ -36,7 +36,6 @@ export class UserController {
   }
 
   @Roles(Role.STUDENT)
-  @HttpCode(204)
   @Patch('/update/:id')
   updateUser(
     @Param('id') id: string,
