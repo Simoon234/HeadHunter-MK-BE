@@ -1,15 +1,15 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
-import helmet from 'helmet';
-import * as cookie from 'cookie-parser';
+import { NestFactory } from "@nestjs/core";
+import { AppModule } from "./app.module";
+import { ValidationPipe } from "@nestjs/common";
+import helmet from "helmet";
+import * as cookie from "cookie-parser";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.enableCors({
-    origin: 'http://localhost:3000',
-    credentials: true,
+    origin: process.env.HOST as string,
+    credentials: true
   });
 
   app.useGlobalPipes(
@@ -26,7 +26,7 @@ async function bootstrap() {
   app.use(helmet());
   app.use(cookie());
 
-  await app.listen(3002);
+  await app.listen(process.env.PORT as unknown as number);
 }
 
 bootstrap();

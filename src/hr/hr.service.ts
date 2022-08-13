@@ -1,15 +1,15 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { HumanResources } from '../schemas/hr.schema';
-import { sign } from 'jsonwebtoken';
-import { User } from '../schemas/user.schema';
-import { ContractType, Grade, Status, WorkType } from '../types';
-import { Response } from 'express';
-import { hashPassword } from '../utils/hashPassword';
-import { HrUpdateDto } from './dto/hr-update.dto';
-import { EmailService } from '../email/email.service';
-import { checkQueryUrl } from '../utils/checkQueryUrl';
+import { Inject, Injectable } from "@nestjs/common";
+import { InjectModel } from "@nestjs/mongoose";
+import { Model } from "mongoose";
+import { HumanResources } from "../schemas/hr.schema";
+import { sign } from "jsonwebtoken";
+import { User } from "../schemas/user.schema";
+import { ContractType, Grade, Status, WorkType } from "../types";
+import { Response } from "express";
+import { hashPassword } from "../utils/hashPassword";
+import { HrUpdateDto } from "./dto/hr-update.dto";
+import { EmailService } from "../email/email.service";
+import { checkQueryUrl } from "../utils/checkQueryUrl";
 
 @Injectable()
 export class HrService {
@@ -17,15 +17,16 @@ export class HrService {
     @InjectModel(HumanResources.name)
     private humanResources: Model<HumanResources>,
     @InjectModel(User.name) private user: Model<User>,
-    @Inject(EmailService) private emailService: EmailService,
-  ) {}
+    @Inject(EmailService) private emailService: EmailService
+  ) {
+  }
 
   async getAllActiveUsers(
     id: string,
     itemsOnPage: number,
     page: number,
-    res: Response,
-  ) {
+    res: Response
+  ): Promise<void> {
     try {
       let maxItemsOnPage = itemsOnPage;
       let currentPage = page;
@@ -132,10 +133,10 @@ export class HrService {
     }
   }
 
-  async addToTalk(id: string, userId: string, res: Response) {
+  async addToTalk(id: string, userId: string, res: Response): Promise<void> {
     try {
       const hr = await this.humanResources.findById({
-        _id: id,
+        _id: id
       });
 
       const addUserToTalk = await this.user.findOne({ _id: userId });
@@ -183,7 +184,7 @@ export class HrService {
   }
 
   // w parametrze przekażemy hr (req.user) i stamtąd wezmiemy id
-  async usersAddedToTalkByCurrentHr(id, itemsOnPage, page, res) {
+  async usersAddedToTalkByCurrentHr(id, itemsOnPage, page, res): Promise<void> {
     try {
       let maxItemsOnPage = itemsOnPage;
       let currentPage = page;
@@ -263,22 +264,26 @@ export class HrService {
         success: true,
         students: usersRes,
         allStudents: usersAdded,
-        pages: totalPages,
+        pages: totalPages
       });
     } catch (e) {
       res.json({ success: false, message: e.message });
     }
   }
 
-  async notInterested(userId: string, hrId: string, res: Response) {
+  async notInterested(
+    userId: string,
+    hrId: string,
+    res: Response
+  ): Promise<void> {
     try {
       await this.user.findOneAndUpdate(
         { _id: userId },
-        { $set: { addedByHr: null, dateAdded: null } },
+        { $set: { addedByHr: null } }
       );
 
       const hr = await this.humanResources.findById({
-        _id: hrId,
+        _id: hrId
       });
       hr.users = hr.users.filter((id) => id.toString() !== userId);
       await hr.save();
@@ -332,15 +337,15 @@ export class HrService {
     }
   }
 
-  async userFoundJob(id: string, res: Response) {
+  async userFoundJob(id: string, res: Response): Promise<void> {
     try {
       const user = await this.user.findOneAndUpdate(
         { _id: id },
-        { $set: { status: Status.HIRED, active: false, accessToken: null } },
+        { $set: { status: Status.HIRED, active: false, accessToken: null } }
       );
 
       if (!user) {
-        throw new Error('Nie znaleziono użytkownika');
+        throw new Error("Nie znaleziono użytkownika");
       }
 
       const allHr = await this.humanResources.find({});
@@ -357,17 +362,23 @@ export class HrService {
       );
 
       res.json({
-        success: true,
+        success: true
       });
     } catch (e) {
       res.json({
         message: e.message,
-        success: false,
+        success: false
       });
     }
   }
 
-  async filterAvailableStudents(query, page, itemsOnPage, id, res) {
+  async filterAvailableStudents(
+    query: any,
+    page: number,
+    itemsOnPage: number,
+    id: string,
+    res: Response
+  ): Promise<void> {
     try {
       const WORK_TYPE = Object.values(WorkType);
       const GRADE = Object.values(Grade);
@@ -622,14 +633,20 @@ export class HrService {
         success: true,
         students: usersRes,
         allStudents: getAllStudents,
-        pages: totalPages,
+        pages: totalPages
       });
     } catch (e) {
       res.json({ success: false, message: e.message });
     }
   }
 
-  async filterToTalkStudents(query, page, itemsOnPage, id, res) {
+  async filterToTalkStudents(
+    query: any,
+    page: number,
+    itemsOnPage: number,
+    id: string,
+    res: Response
+  ): Promise<void> {
     try {
       const WORK_TYPE = Object.values(WorkType);
       const GRADE = Object.values(Grade);

@@ -1,19 +1,19 @@
-import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { Response } from 'express';
-import { EmailService } from '../email/email.service';
-import { sign, verify } from 'jsonwebtoken';
-import { HrDto } from '../hr/dto/hr.dto';
-import { hashPassword } from '../utils/hashPassword';
-import { Payload, Role } from '../types';
-import { HumanResources } from '../schemas/hr.schema';
-import { User, UserDocument } from '../schemas/user.schema';
-import { Admin, AdminDocument } from '../schemas/admin.schema';
-import { UpdateAdmin } from './dto/update-admin.dto';
-import { AddUsersDto } from './dto/add-users.dto';
-import { ObjectId } from 'mongodb';
-import { registerHr, registerUser } from '../templates/email/registration';
+import { HttpException, HttpStatus, Inject, Injectable } from "@nestjs/common";
+import { InjectModel } from "@nestjs/mongoose";
+import { Model } from "mongoose";
+import { Response } from "express";
+import { EmailService } from "../email/email.service";
+import { sign, verify } from "jsonwebtoken";
+import { HrDto } from "../hr/dto/hr.dto";
+import { hashPassword } from "../utils/hashPassword";
+import { Payload, Role } from "../types";
+import { HumanResources } from "../schemas/hr.schema";
+import { User, UserDocument } from "../schemas/user.schema";
+import { Admin, AdminDocument } from "../schemas/admin.schema";
+import { UpdateAdmin } from "./dto/update-admin.dto";
+import { AddUsersDto } from "./dto/add-users.dto";
+import { ObjectId } from "mongodb";
+import { registerHr, registerUser } from "../templates/email/registration";
 
 @Injectable()
 export class AdminService {
@@ -22,8 +22,9 @@ export class AdminService {
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @Inject(EmailService) private emailService: EmailService,
     @InjectModel(HumanResources.name)
-    private humanResources: Model<HumanResources>,
-  ) {}
+    private humanResources: Model<HumanResources>
+  ) {
+  }
 
   private static filterMethod(obj) {
     const {
@@ -82,7 +83,7 @@ export class AdminService {
     };
   }
 
-  async upload(file: AddUsersDto[], res: Response) {
+  async upload(file: AddUsersDto[], res: Response): Promise<void> {
     try {
       const getAllUsers = await this.userModel.find({}).exec();
       const newUsers = [];
@@ -192,14 +193,14 @@ export class AdminService {
 
   //
   //HR form
-  async addHumanResource(obj: HrDto, res: Response) {
+  async addHumanResource(obj: HrDto, res: Response): Promise<void> {
     try {
       const newHr = new this.humanResources({
         firstName: obj.firstName,
         lastName: obj.lastName,
         email: obj.email,
         company: obj.company,
-        maxStudents: obj.maxStudents,
+        maxStudents: obj.maxStudents
       });
 
       const data = await newHr.save();
@@ -234,15 +235,15 @@ export class AdminService {
   }
 
   // first Registration
-  async register(email: string, password: string) {
+  async register(email: string, password: string): Promise<{ _id: string }> {
     const hashPwd = await hashPassword(password);
     const admin = new this.adminModel({
       email,
-      password: hashPwd,
+      password: hashPwd
     });
     const result = await admin.save();
     return {
-      _id: result._id,
+      _id: result._id
     };
   }
 }

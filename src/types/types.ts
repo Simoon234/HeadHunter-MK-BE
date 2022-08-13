@@ -1,5 +1,3 @@
-import { User } from '../schemas/user.schema';
-
 export enum WorkType {
   STAY = 'Na miejscu',
   MOVE = 'Gotowość do przeprowadzki',
@@ -44,37 +42,6 @@ export interface HrInterfaces {
   company: string;
 }
 
-export interface ReturnedUsersValuesInterfaces {
-  users: User[];
-  pages: number;
-}
-
-// export interface SuccessfullyUpdatedUsersInterfaces {
-//   success: boolean;
-//   text: string;
-// }
-
-export interface UserFilterInterface {
-  courseCompletion: number;
-  courseEngagment: number;
-  projectDegree: number;
-  teamProjectDegree: number;
-  expectedTypeWork: WorkType;
-  expectedContractType: ContractType;
-  expectedSalary: number;
-  canTakeApprenticeship: boolean;
-  monthsOfCommercialExp: number;
-}
-
-export interface FileInfoInterface {
-  fieldname: string;
-  originalname: string;
-  encoding: string;
-  mimetype: string;
-  buffer: any;
-  size: number;
-}
-
 export interface Payload {
   email: string;
   id: string;
@@ -93,4 +60,21 @@ export interface AddStudentInterface {
   projectDegree: number;
   teamProjectDegree: number;
   bonusProjectUrls: string[];
+}
+
+
+export interface Person {
+  id: string;
+  accessToken: string;
+  role: Role;
+}
+
+export interface PasswordResetRes {
+  success: boolean;
+  message: string;
+}
+
+export interface TokenGenerator {
+  accessToken: string;
+  expiresIn: number;
 }

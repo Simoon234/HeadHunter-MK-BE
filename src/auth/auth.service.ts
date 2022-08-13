@@ -1,18 +1,18 @@
-import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { User } from 'src/schemas/user.schema';
-import { Model } from 'mongoose';
-import { LogDto } from './dto/log.dto';
-import { v4 as uuid } from 'uuid';
-import { Response } from 'express';
-import { sign } from 'jsonwebtoken';
-import { RegisterDto } from './dto/register.dto';
-import { hashPassword, verifyPassword } from '../utils/hashPassword';
-import { HumanResources } from 'src/schemas/hr.schema';
-import { EmailService } from '../email/email.service';
-import { Role } from '../types';
-import { Admin } from '../schemas/admin.schema';
-import { resetPassword } from '../templates/email/passwordReset';
+import { HttpException, HttpStatus, Inject, Injectable } from "@nestjs/common";
+import { InjectModel } from "@nestjs/mongoose";
+import { User } from "src/schemas/user.schema";
+import { Model } from "mongoose";
+import { LogDto } from "./dto/log.dto";
+import { v4 as uuid } from "uuid";
+import { Response } from "express";
+import { sign } from "jsonwebtoken";
+import { RegisterDto } from "./dto/register.dto";
+import { hashPassword, verifyPassword } from "../utils/hashPassword";
+import { HumanResources } from "src/schemas/hr.schema";
+import { EmailService } from "../email/email.service";
+import { PasswordResetRes, Person, Role, TokenGenerator } from "../types";
+import { Admin } from "../schemas/admin.schema";
+import { resetPassword } from "../templates/email/passwordReset";
 
 @Injectable()
 export class AuthService {
@@ -20,32 +20,138 @@ export class AuthService {
     @InjectModel(User.name) private user: Model<User>,
     @InjectModel(HumanResources.name) private hr: Model<HumanResources>,
     @Inject(EmailService) private mailService: EmailService,
-    @InjectModel(Admin.name) private admin: Model<Admin>,
-  ) {}
+    @InjectModel(Admin.name) private admin: Model<Admin>
+  ) {
+  }
 
   private static createToken(
     currentTokenId: string,
-    id: string,
-  ): {
-    accessToken: string;
-    expiresIn: number;
-  } {
+    id: string
+  ): TokenGenerator {
     const payload: { id: string; userId: string } = {
       id: currentTokenId,
-      userId: id,
+      userId: id
     };
     const expiresIn = 60 * 60 * 24;
     const accessToken = sign(payload, process.env.LOG_TOKEN, {
-      expiresIn,
+      expiresIn
     });
 
     return {
       accessToken,
-      expiresIn,
+      expiresIn
     };
   }
 
-  async login(req: LogDto, res: Response) {
+  private static async generateToken(obj): Promise<string> {
+    let token: string;
+    let refreshToken: string;
+    const personWithTheSameToken = null;
+
+    do {
+      token = uuid();
+      refreshToken = uuid();
+    } while (!!personWithTheSameToken);
+
+    obj.accessToken = token;
+    obj.refreshToken = refreshToken;
+    await obj.save();
+    return token;
+  }
+
+  private static loginUserHandler(student: User) {
+    return {
+      firstName: student.firstName,
+      lastName: student.lastName,
+      tel: student.tel,
+      githubUsername: student.githubUsername,
+      bio: student.bio,
+      courseCompletion: student.courseCompletion,
+      courseEngagement: student.courseEngagement,
+      projectDegree: student.projectDegree,
+      teamProjectDegree: student.teamProjectDegree,
+      expectedTypeWork: student.expectedTypeWork,
+      expectedContractType: student.expectedContractType,
+      monthsOfCommercialExp: student.monthsOfCommercialExp,
+      targetWorkCity: student.targetWorkCity,
+      expectedSalary: student.expectedSalary,
+      canTakeApprenticeship: student.canTakeApprenticeship,
+      education: student.education,
+      courses: student.courses,
+      workExperience: student.workExperience,
+      portfolioUrls: student.portfolioUrls,
+      scrumUrls: student.scrumUrls,
+      projectUrls: student.projectUrls,
+      firstLogin: student.firstLogin
+    };
+  }
+
+  async registerUser(
+    id: string,
+    registerToken: string,
+    obj: RegisterDto,
+    res: Response
+  ) {
+    try {
+      const get = await this.user.findById({ _id: id });
+      if (get.registerToken === null && get.active === true) {
+        throw new Error("You already registered");
+      }
+
+      if (obj.password !== obj.passwordRepeat) {
+        throw new Error("Password is not the same");
+      }
+
+      const hashPwd = await hashPassword(obj.password);
+
+      await this.user.updateOne(
+        { _id: id },
+        { $set: { password: hashPwd, active: true, registerToken: null } }
+      );
+
+      res.json({
+        registeredId: get._id,
+        success: true
+      });
+    } catch (err) {
+      res.json({
+        success: false,
+        message: err.message
+      });
+      console.error(err);
+    }
+  }
+
+  private static checkAuthHandler(student) {
+    return {
+      id: student.id,
+      email: student.email,
+      firstName: student.firstName,
+      lastName: student.lastName,
+      tel: student.tel,
+      githubUsername: student.githubUsername,
+      bio: student.bio,
+      courseCompletion: student.courseCompletion,
+      courseEngagement: student.courseEngagement,
+      projectDegree: student.projectDegree,
+      teamProjectDegree: student.teamProjectDegree,
+      expectedTypeWork: student.expectedTypeWork,
+      expectedContractType: student.expectedContractType,
+      monthsOfCommercialExp: student.monthsOfCommercialExp,
+      targetWorkCity: student.targetWorkCity,
+      expectedSalary: student.expectedSalary,
+      canTakeApprenticeship: student.canTakeApprenticeship,
+      education: student.education,
+      courses: student.courses,
+      workExperience: student.workExperience,
+      portfolioUrls: student.portfolioUrls,
+      scrumUrls: student.scrumUrls,
+      projectUrls: student.projectUrls,
+      firstLogin: student.firstLogin
+    };
+  }
+
+  async login(req: LogDto, res: Response): Promise<void> {
     const { email, password } = req;
 
     try {
@@ -56,22 +162,25 @@ export class AuthService {
       const [user] = [...users, ...hr, ...admins];
 
       if (!user) {
-        throw new Error('Nie znaleziono użytkownika o podanym adresie email');
+        throw new Error("Nie znaleziono użytkownika o podanym adresie email");
       }
 
       const pwd = await verifyPassword(password, user.password);
 
       if (!pwd) {
-        throw new Error('Nieprawidłowe hasło');
+        throw new Error("Nieprawidłowe hasło");
       }
 
       const id = String(user._id);
-      const token = AuthService.createToken(await this.generateToken(user), id);
+      const token = AuthService.createToken(
+        await AuthService.generateToken(user),
+        id
+      );
 
       let resUser: any = {
         id: user._id,
         email: user.email,
-        role: user.role,
+        role: user.role
       };
 
       if (user.role === Role.ADMIN) {
@@ -90,28 +199,7 @@ export class AuthService {
       if (user.role === Role.STUDENT) {
         resUser = {
           ...resUser,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          tel: user.tel,
-          githubUsername: user.githubUsername,
-          bio: user.bio,
-          courseCompletion: user.courseCompletion,
-          courseEngagement: user.courseEngagement,
-          projectDegree: user.projectDegree,
-          teamProjectDegree: user.teamProjectDegree,
-          expectedTypeWork: user.expectedTypeWork,
-          expectedContractType: user.expectedContractType,
-          monthsOfCommercialExp: user.monthsOfCommercialExp,
-          targetWorkCity: user.targetWorkCity,
-          expectedSalary: user.expectedSalary,
-          canTakeApprenticeship: user.canTakeApprenticeship,
-          education: user.education,
-          courses: user.courses,
-          workExperience: user.workExperience,
-          portfolioUrls: user.portfolioUrls,
-          scrumUrls: user.scrumUrls,
-          projectUrls: user.projectUrls,
-          firstLogin: user.firstLogin,
+          ...AuthService.loginUserHandler(user)
         };
       }
 
@@ -129,20 +217,21 @@ export class AuthService {
       res.json({ success: false, message: e.message });
     }
   }
+
   async registerHr(
     id: string,
     registerToken: string,
     obj: RegisterDto,
-    res: Response,
-  ) {
+    res: Response
+  ): Promise<void> {
     try {
       const get = await this.hr.findById({ _id: id });
       if (get.registerToken === null && get.active === true) {
-        throw new Error('You already registered');
+        throw new Error("You already registered");
       }
 
       if (obj.password !== obj.passwordRepeat) {
-        throw new Error('Password is not the same');
+        throw new Error("Password is not the same");
       }
 
       const hashPwd = await hashPassword(obj.password);
@@ -152,42 +241,6 @@ export class AuthService {
         { $set: { password: hashPwd, active: true, registerToken: null } },
       );
 
-      return res.json({
-        registeredId: get._id,
-        success: true,
-      });
-    } catch (err) {
-      res.json({
-        success: false,
-        message: err.message,
-      });
-      console.error(err);
-    }
-  }
-
-  async registerUser(
-    id: string,
-    registerToken: string,
-    obj: RegisterDto,
-    res: Response,
-  ) {
-    try {
-      const get = await this.user.findById({ _id: id });
-      if (get.registerToken === null && get.active === true) {
-        throw new Error('You already registered');
-      }
-
-      if (obj.password !== obj.passwordRepeat) {
-        throw new Error('Password is not the same');
-      }
-
-      const hashPwd = await hashPassword(obj.password);
-
-      await this.user.updateOne(
-        { _id: id },
-        { $set: { password: hashPwd, active: true, registerToken: null } },
-      );
-
       res.json({
         registeredId: get._id,
         success: true,
@@ -201,14 +254,14 @@ export class AuthService {
     }
   }
 
-  async checkAuth(person, res: Response) {
+  async checkAuth(person: Person, res: Response) {
     try {
       let user;
       let resUser;
       if (person.role === Role.ADMIN) {
         user = await this.admin.find({ _id: person.id }).exec();
         resUser = {
-          email: user[0].email,
+          email: user[0].email
         };
       }
 
@@ -226,30 +279,7 @@ export class AuthService {
       if (person.role === Role.STUDENT) {
         user = await this.user.find({ _id: person.id }).exec();
         resUser = {
-          id: user[0].id,
-          email: user[0].email,
-          firstName: user[0].firstName,
-          lastName: user[0].lastName,
-          tel: user[0].tel,
-          githubUsername: user[0].githubUsername,
-          bio: user[0].bio,
-          courseCompletion: user[0].courseCompletion,
-          courseEngagement: user[0].courseEngagement,
-          projectDegree: user[0].projectDegree,
-          teamProjectDegree: user[0].teamProjectDegree,
-          expectedTypeWork: user[0].expectedTypeWork,
-          expectedContractType: user[0].expectedContractType,
-          monthsOfCommercialExp: user[0].monthsOfCommercialExp,
-          targetWorkCity: user[0].targetWorkCity,
-          expectedSalary: user[0].expectedSalary,
-          canTakeApprenticeship: user[0].canTakeApprenticeship,
-          education: user[0].education,
-          courses: user[0].courses,
-          workExperience: user[0].workExperience,
-          portfolioUrls: user[0].portfolioUrls,
-          scrumUrls: user[0].scrumUrls,
-          projectUrls: user[0].projectUrls,
-          firstLogin: user[0].firstLogin,
+          ...AuthService.checkAuthHandler(user[0])
         };
       }
 
@@ -268,7 +298,7 @@ export class AuthService {
     try {
       person.accessToken = null;
       await person.save();
-      return res
+      res
         .clearCookie('jwt', {
           secure: false,
           domain: 'localhost',
@@ -284,13 +314,13 @@ export class AuthService {
     }
   }
 
-  async remindPassword(email: string) {
+  async remindPassword(email: string): Promise<{ message: string }> {
     const user = await this.user.findOne({ email });
 
     console.log(user);
 
     if (!user) {
-      throw new HttpException('No user found', HttpStatus.NOT_FOUND);
+      throw new HttpException("No user found", HttpStatus.NOT_FOUND);
     }
 
     if (!user.email) {
@@ -316,32 +346,20 @@ export class AuthService {
       resetPassword(
         user.firstName === null ? '' : user.firstName,
         user._id.toString(),
-        user.refreshToken,
+        user.refreshToken
       ),
     );
 
     return {
-      message: 'Check your email address.',
+      message: "Check your email address."
     };
   }
 
-  private async generateToken(obj): Promise<string> {
-    let token: string;
-    let refreshToken: string;
-    const personWithTheSameToken = null;
-
-    do {
-      token = uuid();
-      refreshToken = uuid();
-    } while (!!personWithTheSameToken);
-
-    obj.accessToken = token;
-    obj.refreshToken = refreshToken;
-    await obj.save();
-    return token;
-  }
-
-  async changePassword(id: string, refreshToken: string, password: string) {
+  async changePassword(
+    id: string,
+    refreshToken: string,
+    password: string
+  ): Promise<PasswordResetRes> {
     const users = await this.user.find({ _id: id }).exec();
     const hr = await this.hr.find({ _id: id }).exec();
     const admins = await this.admin.find({ _id: id }).exec();
@@ -349,7 +367,7 @@ export class AuthService {
     const [user] = [...users, ...hr, ...admins];
 
     if (!user) {
-      throw new HttpException('User not exist', HttpStatus.BAD_REQUEST);
+      throw new HttpException("User not exist", HttpStatus.BAD_REQUEST);
     }
 
     user.password = await hashPassword(password);

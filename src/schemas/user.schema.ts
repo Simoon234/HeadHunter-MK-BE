@@ -1,13 +1,13 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
-import { Apprentice, ContractType, Role, Status, WorkType } from '../types';
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { Document } from "mongoose";
+import { Apprentice, ContractType, Role, Status, WorkType } from "../types";
 
 export type UserDocument = User & Document;
 
 @Schema()
 export class User {
   @Prop({
-    type: String,
+    type: String
   })
   email: string;
 
@@ -215,8 +215,5 @@ export class User {
   })
   bonusProjectUrls: string[];
 }
-
-//api for user if exist.
-// https://api.github.com/users/{username}
 
 export const UserSchema = SchemaFactory.createForClass(User);

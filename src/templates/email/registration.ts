@@ -1,4 +1,4 @@
-import { ACTIVATION_HR_URL, ACTIVATION_STUDENT_URL } from '../../../config';
+import { ACTIVATION_HR_URL, ACTIVATION_STUDENT_URL } from "../../../config";
 
 const message = (link: string, id: string, token: string) => `
     <h2> Hi there! </h2>

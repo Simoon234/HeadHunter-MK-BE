@@ -1,28 +1,28 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { Status } from '../types';
-import { UserUpdateDto } from './dto/user.update.dto';
-import { Response } from 'express';
-import { User } from '../schemas/user.schema';
-import { EmailService } from '../email/email.service';
-import { hashPassword } from '../utils/hashPassword';
-import { HumanResources } from '../schemas/hr.schema';
+import { Inject, Injectable } from "@nestjs/common";
+import { InjectModel } from "@nestjs/mongoose";
+import { Model } from "mongoose";
+import { Status } from "../types";
+import { UserUpdateDto } from "./dto/user.update.dto";
+import { Response } from "express";
+import { User } from "../schemas/user.schema";
+import { EmailService } from "../email/email.service";
+import { hashPassword } from "../utils/hashPassword";
+import { HumanResources } from "../schemas/hr.schema";
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
     @InjectModel(HumanResources.name) private hrModule: Model<HumanResources>,
-    @Inject(EmailService) private emailService: EmailService,
-  ) {}
+    @Inject(EmailService) private emailService: EmailService
+  ) {
+  }
 
-  //TYLKO USER ROLA USER useGuard()
-  async userFoundJob(id: string, res: Response) {
+  async userFoundJob(id: string, res: Response): Promise<void> {
     try {
       const user = await this.userModel.findOneAndUpdate(
         { _id: id },
-        { $set: { status: Status.HIRED, active: false, accessToken: null } },
+        { $set: { status: Status.HIRED, active: false, accessToken: null } }
       );
 
       const allHr = await this.hrModule.find({});
@@ -86,19 +86,19 @@ export class UserService {
       portfolioUrls,
       scrumUrls,
       password,
-      passwordRepeat,
+      passwordRepeat
     }: UserUpdateDto,
-  ) {
+  ): Promise<void> {
     try {
       const findUser = await this.userModel.findOne({ _id: id });
       const getAllUsers = (await this.userModel.find().exec()).filter(
-        (user) => user.email !== findUser.email,
+        (user) => user.email !== findUser.email
       );
-      let hashPwd = '';
+      let hashPwd = "";
 
       for (const user of getAllUsers) {
         if (user.email === email) {
-          throw new Error('Podany adres email istnieje w bazie danych');
+          throw new Error("Podany adres email istnieje w bazie danych");
         }
       }
 
@@ -173,17 +173,17 @@ export class UserService {
   }
 
   //AVATAR URL SCHEMA CREATE!
-  async getSingleUserCV(id: string, res: Response) {
+  async getSingleUserCV(id: string, res: Response): Promise<void> {
     try {
       const user = await this.userModel.findOne({ _id: id });
 
       if (!user) {
-        throw new Error('Nie ma użytkownika o podanym ID');
+        throw new Error("Nie ma użytkownika o podanym ID");
       }
 
       res.json({
         success: true,
-        user,
+        user
       });
     } catch (e) {
       if (e) {
@@ -196,19 +196,23 @@ export class UserService {
     }
   }
 
-  async deleteAccount(id: string, res: Response) {
+  async deleteAccount(id: string, res: Response): Promise<void> {
     try {
+      let message: string;
+      let success: boolean;
       const user = await this.userModel.deleteOne({ _id: id });
 
       if (user.deletedCount <= 0) {
-        return res.status(404).json({
-          message: 'User with that ID was deleted',
-        });
+        message = "Użytkownik o podanym ID nie istnieje";
+        success = true;
+      } else {
+        message = "Użytkownik został usunięty";
+        success = false;
       }
 
       res.status(204).json({
-        message: `User with id ${id} has been deleted`,
-        success: true,
+        message,
+        success
       });
     } catch (e) {
       if (e) {
