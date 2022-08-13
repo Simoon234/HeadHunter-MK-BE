@@ -3,7 +3,7 @@ import { compare, hash } from "bcrypt";
 export const verifyPassword = (
   password: string,
   storedPassword: string
-): boolean => {
+): Promise<boolean> => {
   return compare(password, storedPassword);
 };
 
