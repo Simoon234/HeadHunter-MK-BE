@@ -11,22 +11,16 @@
     * [Screenshots](#camera-screenshots)
     * [Tech Stack](#space_invader-tech-stack)
     * [Features](#dart-features)
-    * [Color Reference](#art-color-reference)
     * [Environment Variables](#key-environment-variables)
 - [Getting Started](#toolbox-getting-started)
     * [Prerequisites](#bangbang-prerequisites)
     * [Installation](#gear-installation)
-    * [Running Tests](#test_tube-running-tests)
     * [Run Locally](#running-run-locally)
-    * [Deployment](#triangular_flag_on_post-deployment)
 - [Usage](#eyes-usage)
-- [Roadmap](#compass-roadmap)
 - [Contributing](#wave-contributing)
     * [Code of Conduct](#scroll-code-of-conduct)
 - [FAQ](#grey_question-faq)
-- [License](#warning-license)
 - [Contact](#handshake-contact)
-- [Acknowledgements](#gem-acknowledgements)
 
 
 
@@ -49,20 +43,51 @@ Head Hunter MegaK applications was built
   <ul>
     <li><a href="https://www.typescriptlang.org/">Typescript</a></li>
     <li><a href="https://nestjs.com/">Nest.js</a></li>
+   
   </ul>
 
 <summary>Database</summary>
   <ul>
     <li><a href="https://www.mongodb.com/">MongoDB</a></li>
   </ul>
+  
+  <summary>Utils</summary>
+  <ul>
+    <li><a href="https://sendgrid.com/">SendGrid</a></li>
+  </ul>
 
 <!-- Features -->
 ### :dart: Features
 
-- Admin upload files with HR and Users. When everything is ok, all of them are getting emails with registration. [YOU] must register, because app working only when your account is active,
-- User, HR and Admin can update they profiles,
--
+<h2> General </h2>
 
+- Pagination 
+
+- Filtration 
+
+- CRUD 
+
+- JWT
+
+- Passport
+
+1) <h3>Admin</h3>
+
+- Admin upload files with HR's and User's. When everything is ok, all of them are getting emails with registration. [YOU] must register, because app working only when your account is active,
+- Admin can update his/her profile. 
+
+2) <h3>User/Candidate</h3>
+
+- Candidate account is active when he register succesfuly. 
+- He/She can update profile. 
+- He/She can set job status [🔥HIRED🔥]. (In this moment his account disactive, and he can't log again.)
+
+3) <h3> HR </h3>
+
+- When User is active, HR has view with all of the participant's.
+- HR add interested users. If he is not interested any more, he can remove it from the list.
+- HR is allowed to see candidates CV's. (Only when he/she add them as interested one.)
+- HR, after call or meeting can hire user. After clicking a button, he mark student as hired.  
 
 <!-- Env Variables -->
 ### :key: Environment Variables
@@ -155,13 +180,6 @@ function App() {
 }
 ```
 
-<!-- Roadmap -->
-## :compass: Roadmap
-
-* [x] Todo 1
-* [ ] Todo 2
-
-
 <!-- Contributing -->
 ## :wave: Contributing
 
@@ -183,9 +201,9 @@ function App() {
 
     + This is because of server limit imposed by MongoDB. In this project we used free plan.  
 
-- Question 2
+- <p> How many emails can I send? Is there any limits? </p>
 
-    + Answer 2
+    + Yes, there is a limit 100 emails per day. 
 
 
 <!-- Contact -->
