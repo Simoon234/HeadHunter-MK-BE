@@ -100,7 +100,7 @@ export class HrService {
         .limit(maxItemsOnPage)
         .exec();
 
-      const totalPages = Math.round(
+      const totalPages = Math.ceil(
         (countElement - hr.users.length) / maxItemsOnPage,
       );
 
@@ -227,7 +227,7 @@ export class HrService {
         .limit(maxItemsOnPage)
         .exec();
 
-      const totalPages = Math.round(countElement / maxItemsOnPage);
+      const totalPages = Math.ceil(countElement / maxItemsOnPage);
 
       res.json({
         success: true,
@@ -579,7 +579,7 @@ export class HrService {
           ? 1
           : countElement - hr.users.length;
 
-      const totalPages = Math.round(value / maxItemsOnPage);
+      const totalPages = Math.ceil(value / maxItemsOnPage);
 
       res.json({
         success: true,
@@ -772,7 +772,7 @@ export class HrService {
         .limit(maxItemsOnPage)
         .exec();
 
-      const totalPages = Math.round(countElement / maxItemsOnPage);
+      const totalPages = Math.ceil(countElement / maxItemsOnPage);
 
       res.json({
         success: true,
