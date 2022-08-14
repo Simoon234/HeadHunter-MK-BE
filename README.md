@@ -165,6 +165,75 @@ Start the server
   nest start --watch
 ```
 
+Folder structure
+
+
+```
+be_hr
+|- dist
+|- node_modules
+|- src
+|    |-----------------|
+|                      | - admin
+|                            |dto - |
+|                            | - admin.controller.ts
+|                            | - admin.module.ts
+|                            | - admin.service.ts
+|                        -auth
+|                            |dto - |
+|                            | - guards
+|                            | - auth.controller.ts
+|                            | - auth.module.ts
+|                            | - auth.service.ts
+|                            | - jwt.startegy.ts
+|                        -decorators
+|                            | - object.decorator.ts
+|                            | - roles.decorator.ts
+|                        -email
+|                            | - email.module.ts
+|                            | - email.service.ts
+|                        -hr
+|                            |dto - | 
+|                            | - hr.controller.ts
+|                            | - hr.module.ts
+|                            | - hr.service.ts
+|                       -schemas
+|                            | - admin.schema.ts
+|                            | - hr.schema.ts
+|                            | - user.schema.ts
+|                        -templates |
+|                                   |email |
+|                                          | - passwordReset.ts
+|                                          | - registration.ts
+|                        -types
+|                            | - index.ts
+|                            | - types.ts
+|                        -user
+|                            |dto - |
+|                            | - user.controller.ts
+|                            | - user.module.ts
+|                            | - user.service.ts
+|                        utils
+|                            | - checkQueryUrl.ts
+|                            | - hashPassword.ts
+|                            | - sendError.ts
+|                            | - usersResponseAvailable.ts
+|                            | - usersResponseToTalk.ts
+|                        app.module.ts
+|                        config.ts
+|                        mail-config.ts
+|                        main.ts
+|- .env
+|- .eslintrc.js
+|- .gitignore
+|- .prettierrc
+|- nest-cli.json
+|- package.json
+|- package-lock.json
+|- tsconfig.build.json
+|- tsconfig.json
+|- yarn.lock
+```
 
 <!-- Usage -->
 ## :eyes: Usage
@@ -201,7 +270,7 @@ function App() {
 
     + This is because of server limit imposed by MongoDB. In this project we used free plan.  
 
-- <p> How many emails can I send? Is there any limits? </p>
+- <p> How many emails can I send? Are there any limits? </p>
 
     + Yes, there is a limit 100 emails per day. 
 
@@ -210,4 +279,3 @@ function App() {
 ## :handshake: Contact
 
 Szymon - simongetbug@gmail.com
-
