@@ -40,6 +40,7 @@ export class AdminController {
   uploadStudents(@Body() file: AddUsersDto[], @Res() res: Response) {
     return this.adminService.uploadStudents(file, res);
   }
+
   @Roles(Role.ADMIN)
   @HttpCode(201)
   @Post('/register')

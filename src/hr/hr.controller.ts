@@ -43,6 +43,7 @@ export class HrController {
   ): Promise<void> {
     return this.hr.notInterested(userId, hrId, res);
   }
+
   @Roles(Role.HR)
   @HttpCode(200)
   @Get('/add-to-talk/:id/:userId')
@@ -83,6 +84,7 @@ export class HrController {
   userGotJob(@Param('id') id: string, @Res() res: Response) {
     return this.hr.userFoundJob(id, res);
   }
+
   @Roles(Role.HR)
   @HttpCode(200)
   @Get(`/filter-available/:page/:itemsOnPage/:id`)
@@ -95,6 +97,7 @@ export class HrController {
   ) {
     return this.hr.filterAvailableStudents(filter, page, itemsOnPage, id, res);
   }
+
   @Roles(Role.HR)
   @Get(`/filter-to-talk/:page/:itemsOnPage/:id`)
   filterToTalkStudents(

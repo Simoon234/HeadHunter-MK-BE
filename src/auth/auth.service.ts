@@ -314,25 +314,31 @@ export class AuthService {
       const hr = await this.user.find().exec();
       const admin = await this.user.find().exec();
 
-      const allUsers = [...user, ...hr, ...admin].find((user) => user.email === email);
+      const allUsers = [...user, ...hr, ...admin].find(
+        (user) => user.email === email,
+      );
 
       if (!allUsers) {
         sendError('Brak użytkownika o podanym adresie email');
       }
 
-      allUsers.refreshToken = sign({ email: allUsers.email }, REFRESH_TOKEN_REMINDER, {
-        expiresIn: '1h',
-      });
+      allUsers.refreshToken = sign(
+        { email: allUsers.email },
+        REFRESH_TOKEN_REMINDER,
+        {
+          expiresIn: '1h',
+        },
+      );
       await allUsers.save();
 
       await this.mailService.sendEmail(
-          allUsers.email,
+        allUsers.email,
         ADMIN_EMAIL,
         '[NO-REPLY] Password reset',
         resetPassword(
-            allUsers.firstName === null ? '' : allUsers.firstName,
-            allUsers._id.toString(),
-            allUsers.refreshToken,
+          allUsers.firstName === null ? '' : allUsers.firstName,
+          allUsers._id.toString(),
+          allUsers.refreshToken,
         ),
       );
 

@@ -293,7 +293,7 @@ export class HrService {
         },
       });
     } catch (e) {
-      console.log(e)
+      console.log(e);
       res.json({
         success: false,
         message: e.message,

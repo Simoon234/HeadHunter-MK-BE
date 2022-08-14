@@ -1,12 +1,22 @@
-import {Body, Controller, Get, HttpCode, Inject, Param, Post, Res, UseGuards,} from '@nestjs/common';
-import {AuthService} from './auth.service';
-import {LogDto} from './dto/log.dto';
-import {RegisterDto} from './dto/register.dto';
-import {Response} from 'express';
-import {JwtAuthGuard} from './guards/jwt.guard';
-import {ObjectPerson} from '../decorators/object.decorator';
-import {Person, Role} from '../types';
-import {Roles} from "../decorators/roles.decorator";
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Inject,
+  Param,
+  Post,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
+import { AuthService } from './auth.service';
+import { LogDto } from './dto/log.dto';
+import { RegisterDto } from './dto/register.dto';
+import { Response } from 'express';
+import { JwtAuthGuard } from './guards/jwt.guard';
+import { ObjectPerson } from '../decorators/object.decorator';
+import { Person, Role } from '../types';
+import { Roles } from '../decorators/roles.decorator';
 
 @Controller('/auth')
 export class AuthController {
@@ -26,6 +36,7 @@ export class AuthController {
   log(@Body() log: LogDto, @Res() res: Response): Promise<void> {
     return this.authService.login(log, res);
   }
+
   @Roles(Role.ADMIN)
   @HttpCode(201)
   @Post('/register-hr/:id/:registerToken')
@@ -49,6 +60,7 @@ export class AuthController {
   ) {
     return this.authService.registerUser(id, registerToken, obj, res);
   }
+
   @Roles(Role.ADMIN || Role.HR || Role.STUDENT)
   @HttpCode(205)
   @UseGuards(JwtAuthGuard)
@@ -66,7 +78,6 @@ export class AuthController {
     return this.authService.remindPassword(email, res);
   }
 
-  @Roles(Role.ADMIN || Role.HR || Role.STUDENT)
   @HttpCode(201)
   @Post('/change-password/:id/:refreshToken')
   changePassword(

@@ -103,7 +103,7 @@ export class AdminService {
 
         const user = new this.userModel(newUser);
 
-        console.log({user})
+        console.log({ user });
 
         const { token } = await this.createTokenAndSendEmail(
           Role.STUDENT,
@@ -116,7 +116,7 @@ export class AdminService {
 
         user.registerToken = token;
 
-        console.log({user})
+        console.log({ user });
 
         await user.save();
       });
