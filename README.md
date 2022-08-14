@@ -8,7 +8,6 @@
 # :notebook_with_decorative_cover: Table of Contents
 
 - [About the Project](#star2-about-the-project)
-    * [Screenshots](#camera-screenshots)
     * [Tech Stack](#space_invader-tech-stack)
     * [Features](#dart-features)
     * [Environment Variables](#key-environment-variables)
@@ -16,9 +15,7 @@
     * [Prerequisites](#bangbang-prerequisites)
     * [Installation](#gear-installation)
     * [Run Locally](#running-run-locally)
-- [Usage](#eyes-usage)
-- [Contributing](#wave-contributing)
-    * [Code of Conduct](#scroll-code-of-conduct)
+- [Routes](#eyes-routes)
 - [FAQ](#grey_question-faq)
 - [Contact](#handshake-contact)
 
@@ -26,14 +23,7 @@
 
 <!-- About the Project -->
 ## :star2: About the Project
-Head Hunter MegaK applications was built 
-
-<!-- Screenshots -->
-### :camera: Screenshots
-
-<div align="center"> 
-  <img src="https://placehold.co/600x400?text=Your+Screenshot+here" alt="screenshot" />
-</div>
+API for the application that allows you to easily connect people from HR departments of companies, including Headhunters [HR], with people looking for a job in IT.
 
 
 <!-- TechStack -->
@@ -235,44 +225,62 @@ be_hr
 |- yarn.lock
 ```
 
-<!-- Usage -->
-## :eyes: Usage
+<!-- Routes -->
+### :eyes: Routes
+ Admin 
+| Route `/admin`  |
+| ------------ | 
+|`/:id`        | 
+|`/add/hr`    | 
+|`/add/students`    |
+|`/register`  |
 
-Use this space to tell a little more about your project and how it can be used. Show additional screenshots, code samples, demos or link to other resources.
+ HR 
+| Route `/hr`  |
+| ------------ | 
+|`/interested/:id/:itemsOnPage/:page`        | 
+|`/not-interested/:hrId/:userId`    | 
+|`/add-to-talk/:id/:userId`    |
+|`/update/:id`  |
+|`/all/active/:id/:itemsOnPage/:page`  |
+|`/hired/:id`  |
+|`/filter-available/:page/:itemsOnPage/:id`  |
+|`/filter-to-talk/:page/:itemsOnPage/:id`  |
 
+ Student 
+| Route `/user`  |
+| ------------ | 
+|`/details/:id`        | 
+|`/hired/:id`    | 
+|`/update/:id`    |
+|`/delete-account/:id`  |
 
-```javascript
-import Component from 'my-project'
+Auth 
+| Route `/auth`  |
+| ------------ | 
+|`/check`        | 
+|`/login`    | 
+|`/register-hr/:id/:registerToken`    |
+|`/register-student/:id/:registerToken`  |
+|`/logout`    |
+|`/reset-password`  |
+|`/change-password/:id/:refreshToken`  |
 
-function App() {
-  return <Component />
-}
-```
-
-<!-- Contributing -->
-## :wave: Contributing
-
-<div align="center">
-<h3>Szymon [Me] </h3>
-<a href="https://github.com/Simoon234">
-  <img src="https://avatars.githubusercontent.com/u/83337792?v=4" />
-</a>
-<h3>Tomasz</h3>
-<a href="https://github.com/tomaszburas">
-  <img src="https://avatars.githubusercontent.com/u/91786940?v=4" />
-</a>
-</div>
 
 <!-- FAQ -->
 ## :grey_question: FAQ
 
-- <p>Why can I only add 20 users/admins/hr? </p> 
+- <p> Why can I only add 20 user's/admin's/hr's? </p> 
 
     + This is because of server limit imposed by MongoDB. In this project we used free plan.  
 
 - <p> How many emails can I send? Are there any limits? </p>
 
     + Yes, there is a limit 100 emails per day. 
+  
+- <p> Why I have error while sending email? </p> 
+ 
+    + Please make sure to add user and pass (API_KEY). Whole application is using SendGrind library. Sign in there, and get your own API_KEY.  
 
 
 <!-- Contact -->
