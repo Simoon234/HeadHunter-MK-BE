@@ -98,7 +98,7 @@ To run this project, you will need to add the following environment variables to
 
 `ADMIN_EMAIL` - admin email 
 
-`HOST` - application host
+`HOST` - frontend url
 
 `PORT` - application port
 
