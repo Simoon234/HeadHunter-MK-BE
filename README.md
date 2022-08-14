@@ -23,7 +23,9 @@
 
 <!-- About the Project -->
 ## :star2: About the Project
+<div align="center">
 API for the application that allows you to easily connect people from HR departments of companies, including Headhunters [HR], with people looking for a job in IT.
+</div>
 
 
 <!-- TechStack -->
