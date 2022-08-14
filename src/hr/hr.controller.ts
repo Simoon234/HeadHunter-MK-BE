@@ -21,6 +21,7 @@ import { Roles } from '../decorators/roles.decorator';
 export class HrController {
   constructor(@Inject(HrService) private hr: HrService) {}
 
+  @Roles(Role.HR)
   @HttpCode(200)
   @Get('/interested/:id/:itemsOnPage/:page')
   getAllInterestedUsers(
@@ -32,6 +33,7 @@ export class HrController {
     return this.hr.usersAddedToTalkByCurrentHr(id, itemsOnPage, page, res);
   }
 
+  @Roles(Role.HR)
   @HttpCode(200)
   @Get('/not-interested/:hrId/:userId')
   notInterested(
@@ -42,6 +44,7 @@ export class HrController {
     return this.hr.notInterested(userId, hrId, res);
   }
 
+  @Roles(Role.HR)
   @HttpCode(200)
   @Get('/add-to-talk/:id/:userId')
   addToTalk(
@@ -52,7 +55,7 @@ export class HrController {
     return this.hr.addToTalk(id, userId, res);
   }
 
-  @HttpCode(204)
+  @Roles(Role.HR)
   @Put('/update/:id')
   update(
     @Param('id') id,
@@ -62,6 +65,7 @@ export class HrController {
     return this.hr.update(id, obj, res);
   }
 
+  @Roles(Role.HR)
   @HttpCode(200)
   @UseGuards(JwtAuthGuard)
   @Get('/all/active/:id/:itemsOnPage/:page')
@@ -81,6 +85,7 @@ export class HrController {
     return this.hr.userFoundJob(id, res);
   }
 
+  @Roles(Role.HR)
   @HttpCode(200)
   @Get(`/filter-available/:page/:itemsOnPage/:id`)
   filterAvailableStudents(
@@ -93,6 +98,7 @@ export class HrController {
     return this.hr.filterAvailableStudents(filter, page, itemsOnPage, id, res);
   }
 
+  @Roles(Role.HR)
   @Get(`/filter-to-talk/:page/:itemsOnPage/:id`)
   filterToTalkStudents(
     @Query() filter: any,

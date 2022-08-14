@@ -36,7 +36,6 @@ export class UserController {
   }
 
   @Roles(Role.STUDENT)
-  @HttpCode(204)
   @Patch('/update/:id')
   updateUser(
     @Param('id') id: string,
@@ -46,7 +45,7 @@ export class UserController {
     return this.userService.updateUserAfterLogin(id, res, user);
   }
 
-  @Roles(Role.STUDENT || Role.HR)
+  @Roles(Role.STUDENT || Role.ADMIN)
   @HttpCode(205)
   @Get('/delete-account/:id')
   deleteAccount(@Param('id') id: string, @Res() res: Response) {
