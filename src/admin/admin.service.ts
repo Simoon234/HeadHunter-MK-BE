@@ -64,7 +64,11 @@ export class AdminService {
 
   async uploadStudents(file: AddUsersDto[], res: Response) {
     try {
-      const getAllUsers = await this.userModel.find({}).exec();
+      const hr = await this.humanResources.find();
+      const admin = await this.adminModel.find();
+      const student = await this.userModel.find();
+
+      const allUsers = [...hr, ...admin, ...student];
       const newUsers = [];
 
       file.map((obj) => {
@@ -84,7 +88,7 @@ export class AdminService {
       });
 
       newUsers.map(async (newUser) => {
-        if (!!getAllUsers.find((user) => user.email === newUser.email)) {
+        if (!!allUsers.find((user) => user.email === newUser.email)) {
           return;
         }
 
@@ -103,8 +107,6 @@ export class AdminService {
 
         const user = new this.userModel(newUser);
 
-        console.log({ user });
-
         const { token } = await this.createTokenAndSendEmail(
           Role.STUDENT,
           {
@@ -115,8 +117,6 @@ export class AdminService {
         );
 
         user.registerToken = token;
-
-        console.log({ user });
 
         await user.save();
       });
@@ -176,6 +176,15 @@ export class AdminService {
 
   async addHR(obj: HrDto, res: Response) {
     try {
+      const hr = await this.humanResources.find({ email: obj.email });
+      const admin = await this.adminModel.find({ email: obj.email });
+      const student = await this.userModel.find({ email: obj.email });
+
+      const [user] = [...hr, ...admin, ...student];
+      if (user) {
+        sendError('W bazie danych istnieje użytkownik z podanym adresem email');
+      }
+
       const newHr = new this.humanResources({
         firstName: obj.firstName,
         lastName: obj.lastName,
@@ -214,12 +223,21 @@ export class AdminService {
 
   async register(email: string, password: string, res: Response) {
     try {
+      const hr = await this.humanResources.find({ email });
+      const admin = await this.adminModel.find({ email });
+      const student = await this.userModel.find({ email });
+
+      const [user] = [...hr, ...admin, ...student];
+      if (user) {
+        sendError('W bazie danych istnieje użytkownik z podanym adresem email');
+      }
+
       const hashPwd = await hashPassword(password);
-      const admin = new this.adminModel({
+      const newAdmin = new this.adminModel({
         email,
         password: hashPwd,
       });
-      const result = await admin.save();
+      const result = await newAdmin.save();
       res.json({ success: true, id: result._id });
     } catch (e) {
       res.json({ success: false, message: e.message });
