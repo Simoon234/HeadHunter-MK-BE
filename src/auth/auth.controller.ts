@@ -62,7 +62,6 @@ export class AuthController {
   }
 
   @Roles(Role.ADMIN || Role.HR || Role.STUDENT)
-  @HttpCode(205)
   @UseGuards(JwtAuthGuard)
   @Get('/logout')
   logout(@ObjectPerson() person: Person, @Res() res: Response): Promise<void> {

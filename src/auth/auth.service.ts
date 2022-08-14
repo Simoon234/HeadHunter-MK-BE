@@ -25,10 +25,7 @@ export class AuthService {
     @InjectModel(Admin.name) private admin: Model<Admin>,
   ) {}
 
-  private static createToken(
-    currentTokenId: string,
-    id: string,
-  ): TokenGenerator {
+  static createToken(currentTokenId: string, id: string): TokenGenerator {
     const payload: { id: string; userId: string } = {
       id: currentTokenId,
       userId: id,
@@ -44,7 +41,7 @@ export class AuthService {
     };
   }
 
-  private static async generateToken(obj): Promise<string> {
+  static async generateToken(obj): Promise<string> {
     const token = uuid();
     const refreshToken = uuid();
 

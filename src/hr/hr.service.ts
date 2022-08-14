@@ -288,7 +288,7 @@ export class HrService {
 
       await findUser.save();
 
-      await res.json({
+      res.json({
         success: true,
         user: {
           id: id,
